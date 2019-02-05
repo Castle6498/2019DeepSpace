@@ -150,6 +150,7 @@ public class PlateCenter extends Subsystem {
     private boolean hasHomed = false;
     private SystemState handleHoming(){
         if(mStateChanged){
+            
             hasHomed=false;
             mBeltTalon.set(ControlMode.PercentOutput,-.2);
             mBeltTalon.setSelectedSensorPosition(-1);
@@ -157,11 +158,13 @@ public class PlateCenter extends Subsystem {
 
         if(!hasHomed&&mBeltTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
+            System.out.println("home done");
             stopMotor();
         }
 
 
         if(hasHomed){
+            System.out.println("home done");
         return mWantedState;
         }else{
             return SystemState.HOMING;
