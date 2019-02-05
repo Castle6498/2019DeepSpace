@@ -22,6 +22,8 @@ public interface ControlBoardInterface {
 
     boolean getHatchPanelAlignment();
 
+    boolean getPlateHome();
+
     double getHatchPanelJog();
 
     boolean getHatchPanelDeploy();

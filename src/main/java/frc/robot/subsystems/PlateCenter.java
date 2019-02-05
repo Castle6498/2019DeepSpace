@@ -94,6 +94,7 @@ public class PlateCenter extends Subsystem {
         public void onStart(double timestamp) {
             stop();
             synchronized (PlateCenter.this) {
+                System.out.println("Plate onStart");
                 mSystemState = SystemState.IDLE;
                 mStateChanged = true;
                 mCurrentStateStartTime = timestamp;
@@ -119,6 +120,7 @@ public class PlateCenter extends Subsystem {
                     break;  
                 case HOMING:
                     newState = handleHoming();
+                    break;
                 default:
                     newState = SystemState.IDLE;
                 }
@@ -161,12 +163,12 @@ public class PlateCenter extends Subsystem {
         if(!hasHomed&&mBeltTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
             System.out.println("home done");
-            stopMotor();
+            setPosition(2);
         }
 
 
         if(hasHomed){
-            System.out.println("home done");
+        
         return mWantedState;
         }else{
             return SystemState.HOMING;
@@ -228,21 +230,25 @@ public class PlateCenter extends Subsystem {
    
     //POSITION CONTROL
         private final double slideMiddlePoint = Constants.kPlateCenterTalonSoftLimit/Constants.kPlateCenterTicksPerInch/2;
-        private double mWantedSetPosition=slideMiddlePoint;
-        private double mTravelingSetPosition=slideMiddlePoint;
+        private double mWantedSetPosition=.1;
+        private double mTravelingSetPosition=0;
 
         public synchronized void setPosition(double pos){
             mWantedSetPosition=pos;
+            System.out.println("Set wanted pos to "+pos);
         }
 
         public void jog(double amount){
-            mWantedSetPosition+=amount;
+            setPosition(mWantedSetPosition+=amount);
         }
 
         private void positionUpdater(){
+           
             if(hasHomed&&mWantedSetPosition!=mTravelingSetPosition){
+
                 mTravelingSetPosition=mWantedSetPosition;
-                mBeltTalon.set(ControlMode.Position, mTravelingSetPosition);
+                System.out.println("set position: "+mTravelingSetPosition);
+                mBeltTalon.set(ControlMode.Position, mTravelingSetPosition*Constants.kPlateCenterTicksPerInch);
             }
         }
 

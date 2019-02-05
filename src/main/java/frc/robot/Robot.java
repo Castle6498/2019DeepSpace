@@ -104,7 +104,7 @@ public class Robot extends TimedRobot {
 
             // Start loopers
             mEnabledLooper.start();
-            mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+            //mPlate.setWantedState(PlateCenter.SystemState.HOMING);
 
            zeroAllSensors();
             
@@ -134,6 +134,7 @@ public class Robot extends TimedRobot {
         if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
         else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
         else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
+        else if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
             
         mPlate.jog(mControlBoard.getHatchPanelJog());
 
