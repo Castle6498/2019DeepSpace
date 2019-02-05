@@ -1,34 +1,30 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import frc.robot.auto.AutoModeExecuter;
-import frc.robot.loops.Looper;
-import frc.robot.state_machines.Superstructure;
-import frc.robot.subsystems.*;
-import frc.lib.util.*;
-import frc.lib.util.math.RigidTransform2d;
-
 import java.util.Arrays;
-import java.util.Map;
-//kaden was here
+
+import edu.wpi.first.wpilibj.TimedRobot;
+import frc.lib.util.CrashTracker;
+import frc.robot.loops.Looper;
+import frc.robot.subsystems.PlateCenter;
 
 /**
- * The main robot class, which instantiates all robot parts and helper classes and initializes all loops. Some classes
- * are already instantiated upon robot startup; for those classes, the robot gets the instance as opposed to creating a
- * new object
+ * The main robot class, which instantiates all robot parts and helper classes
+ * and initializes all loops. Some classes are already instantiated upon robot
+ * startup; for those classes, the robot gets the instance as opposed to
+ * creating a new object
  * 
- * After initializing all robot parts, the code sets up the autonomous and teleoperated cycles and also code that runs
- * periodically inside both routines.
+ * After initializing all robot parts, the code sets up the autonomous and
+ * teleoperated cycles and also code that runs periodically inside both
+ * routines.
  * 
- * This is the nexus/converging point of the robot code and the best place to start exploring.
+ * This is the nexus/converging point of the robot code and the best place to
+ * start exploring.
  * 
- * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
- * described in the IterativeRobot documentation. If you change the name of this class or the package after creating
- * this project, you must also update the manifest file in the resource directory.
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as described in the IterativeRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the manifest file in the resource
+ * directory.
  */
 public class Robot extends TimedRobot {
 
@@ -37,13 +33,13 @@ public class Robot extends TimedRobot {
 
     // Create subsystem manager
     private final SubsystemManager mSubsystemManager = new SubsystemManager( //TODO: make sure you go back and add these
-            Arrays.asList(PlateCenter.getInstance()));
+            Arrays.asList(mPlate));
 
 
 
     private Looper mEnabledLooper = new Looper();
 
-
+    private ControlBoardInterface mControlBoard = ControlBoard.getInstance();
 
    
 
@@ -54,7 +50,6 @@ public class Robot extends TimedRobot {
 
     public void zeroAllSensors() {
         mSubsystemManager.zeroSensors();
-        mDrive.zeroSensors();
     }
 
     /**
@@ -130,18 +125,16 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         try {
-            double timestamp = Timer.getFPGATimestamp();
+            //double timestamp = Timer.getFPGATimestamp();
             // Drive base
-            double throttle = mControlBoard.getThrottle();
-            double turn = mControlBoard.getTurn();
 
            // boolean wants_aim_button = mControlBoard.getAimButton();
           
-               
-                
-                    mSuperstructure.setWantedState(Superstructure.WantedState.IDLE);
-                
-                    mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn()));
+        if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
+        else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
+        else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
+            
+        mPlate.jog(mControlBoard.getHatchPanelJog());
 
                
             
@@ -160,17 +153,17 @@ public class Robot extends TimedRobot {
         try {
             CrashTracker.logDisabledInit();
 
-            if (mAutoModeExecuter != null) {
+           /* if (mAutoModeExecuter != null) {
                 mAutoModeExecuter.stop();
             }
             mAutoModeExecuter = null;
-
+            */
             mEnabledLooper.stop();
 
             // Call stop on all our Subsystems.
             mSubsystemManager.stop();
 
-            mDrive.setOpenLoop(DriveSignal.NEUTRAL);
+            //mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
            
 
@@ -196,7 +189,7 @@ public class Robot extends TimedRobot {
             mLED.setLEDOff();
         }*/
 
-        zeroAllSensors();
+        //zeroAllSensors();
         allPeriodic();
     }
 
@@ -214,9 +207,9 @@ public class Robot extends TimedRobot {
      */
     public void allPeriodic() {
         
-        mSubsystemManager.outputToSmartDashboard();
+        //mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();
-        mEnabledLooper.outputToSmartDashboard();
+        //mEnabledLooper.outputToSmartDashboard();
        
         
     }

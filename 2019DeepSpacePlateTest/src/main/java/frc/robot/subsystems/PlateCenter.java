@@ -1,23 +1,23 @@
 package frc.robot.subsystems;
 
-import frc.robot.Constants;
-import frc.robot.loops.Loop;
-import frc.robot.loops.Looper;
-import frc.lib.util.drivers.Talon.CANTalonFactory;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import edu.wpi.first.wpilibj.Solenoid;
+
 import edu.wpi.first.wpilibj.Ultrasonic;
+import frc.lib.util.drivers.Talon.CANTalonFactory;
+import frc.robot.Constants;
+import frc.robot.loops.Loop;
+import frc.robot.loops.Looper;
 
 /**
- * The plateCenter subsystem consists of dynamo motors that are meant to send one ball at a time into the shooter.
- * There are ir sensors placed before and after the plateCenter to sense blockage or emptiness of the hopper.
- * The main things this subsystem has to are feed fuel and unjam
+ * The plateCenter subsystem consists of dynamo motors that are meant to send
+ * one ball at a time into the shooter. There are ir sensors placed before and
+ * after the plateCenter to sense blockage or emptiness of the hopper. The main
+ * things this subsystem has to are feed fuel and unjam
  * 
  *
  */
@@ -35,8 +35,8 @@ public class PlateCenter extends Subsystem {
     }
 
     private TalonSRX mBeltTalon;
-    private final Solenoid mSuckSolenoid, mDeploySolenoid, mHardStopYeeYeeSolenoid;
-    private final Ultrasonic mTriggerOutsideLeft, mTriggerOutsideRight, mTriggerInsideLeft, mTriggerInsideRight;
+   // private final Solenoid mSuckSolenoid, mDeploySolenoid, mHardStopYeeYeeSolenoid;
+   // private final Ultrasonic mTriggerOutsideLeft, mTriggerOutsideRight, mTriggerInsideLeft, mTriggerInsideRight;
 //TODO use dio instead of ultrasonic for lazzzers
     public enum SensorSide {
         OUTSIDELEFT,
@@ -61,7 +61,7 @@ public class PlateCenter extends Subsystem {
         mBeltTalon = CANTalonFactory.tuneLoops(mBeltTalon, 0, Constants.kPlateCenterTalonP,
         Constants.kPlateCenterTalonI, Constants.kPlateCenterTalonD, Constants.kPlateCenterTalonF);
   
-        mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
+      /*  mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
         mDeploySolenoid = new Solenoid(Constants.kPlateCenterDeploySolenoidPort);
         mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
 
@@ -70,7 +70,7 @@ public class PlateCenter extends Subsystem {
         mTriggerInsideLeft = new Ultrasonic(Constants.kPlateCenterInsideLeftSensorPin[0], Constants.kPlateCenterInsideLeftSensorPin[1]);
         mTriggerInsideRight = new Ultrasonic(Constants.kPlateCenterInsideRightSensorPin[0], Constants.kPlateCenterInsideRightSensorPin[1]);
 
-
+*/
     }
 
     public enum SystemState {
@@ -239,13 +239,13 @@ public class PlateCenter extends Subsystem {
 
     //Pneumatic Controls
         private void suck(boolean s){
-            mSuckSolenoid.set(s);
+           // mSuckSolenoid.set(s);
         }
         private void push(boolean p){
-            mDeploySolenoid.set(p);
+           // mDeploySolenoid.set(p);
         }
         private void hardStop(boolean h){
-            mHardStopYeeYeeSolenoid.set(h);
+          //  mHardStopYeeYeeSolenoid.set(h);
         }
         private void resetPistons(){
             hardStop(false);
@@ -263,14 +263,14 @@ public class PlateCenter extends Subsystem {
 
         public boolean getSensor(SensorSide side){
             switch(side){
-                case OUTSIDELEFT: //TODO update for DIO
+              /*  case OUTSIDELEFT: //TODO update for DIO
                     return getSpecificSensor(mTriggerOutsideLeft);
                 case OUTSIDERIGHT:
                     return getSpecificSensor(mTriggerOutsideRight);
                 case INSIDELEFT:
                     return getSpecificSensor(mTriggerInsideLeft);
                 case INSIDERIGHT:
-                    return getSpecificSensor(mTriggerInsideRight);
+                    return getSpecificSensor(mTriggerInsideRight);*/
                 default: 
                     return false;
             }

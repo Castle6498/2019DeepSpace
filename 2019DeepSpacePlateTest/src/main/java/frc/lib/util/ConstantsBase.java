@@ -1,28 +1,22 @@
 package frc.lib.util;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 /**
  * ConstantsBase
  * 
- * Base class for storing robot constants. Anything stored as a public static field will be reflected and be able to set
- * externally
+ * Base class for storing robot constants. Anything stored as a public static
+ * field will be reflected and be able to set externally
  */
 public abstract class ConstantsBase {
     HashMap<String, Boolean> modifiedKeys = new HashMap<String, Boolean>();
@@ -59,7 +53,7 @@ public abstract class ConstantsBase {
     public boolean truncateUserConstants() {
         try {
             Files.write(getFile().toPath(), new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
-            loadFromFile();
+            //loadFromFile();
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -158,7 +152,7 @@ public abstract class ConstantsBase {
         }
         return constants;
     }
-
+/*
     public JSONObject getJSONObjectFromFile() throws IOException, ParseException {
         File file = getFile();
         if (file == null || !file.exists()) {
@@ -211,5 +205,5 @@ public abstract class ConstantsBase {
             e.printStackTrace();
         }
     }
-
+*/
 }

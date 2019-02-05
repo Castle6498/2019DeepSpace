@@ -18,31 +18,11 @@ public interface ControlBoardInterface {
     boolean getDriveAimButton();
 
     // OPERATOR CONTROLS
-    boolean getFeedButton();
+    boolean getHatchPanelCentering();
 
-    boolean getIntakeButton();
+    boolean getHatchPanelAlignment();
 
-    boolean getShooterOpenLoopButton();
+    double getHatchPanelJog();
 
-    boolean getExhaustButton();
-
-    boolean getUnjamButton();
-
-    boolean getShooterClosedLoopButton();
-
-    boolean getFlywheelSwitch();
-
-    boolean getHangButton();
-
-    boolean getGrabGearButton();
-
-    boolean getScoreGearButton();
-
-    boolean getActuateHopperButton();
-
-    boolean getBlinkLEDButton();
-
-    boolean getRangeFinderButton();
-
-    boolean getWantGearDriveLimit();
+    boolean getHatchPanelDeploy();
 }

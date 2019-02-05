@@ -1,20 +1,10 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Solenoid;
-
 import frc.lib.util.ConstantsBase;
-import frc.lib.util.InterpolatingDouble;
-import frc.lib.util.InterpolatingTreeMap;
-import frc.lib.util.math.PolynomialRegression;
-
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-import java.util.HashMap;
 
 /**
- * A list of constants used by the rest of the robot code. This include physics constants as well as constants
- * determined through calibrations.
+ * A list of constants used by the rest of the robot code. This include physics
+ * constants as well as constants determined through calibrations.
  */
 public class Constants extends ConstantsBase {
     public static double kLooperDt = 0.005;
@@ -166,7 +156,7 @@ public class Constants extends ConstantsBase {
     //PlateCenter -----------------------------------------------------------
     
         //Talon
-        public static final int kPlateCenterTalonID=0;
+        public static final int kPlateCenterTalonID=8;
             public static final double kPlateCenterTalonP=20;
             public static final double kPlateCenterTalonI=0;
             public static final double kPlateCenterTalonD=0;
