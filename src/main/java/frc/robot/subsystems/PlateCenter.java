@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.Ultrasonic;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
+import frc.robot.CameraVision;
 import frc.robot.Constants;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
@@ -22,8 +23,9 @@ import frc.robot.loops.Looper;
  *
  */
 public class PlateCenter extends Subsystem {
-    
-   
+    double distanceFromCenter;
+    double distanceFromObject;
+   CameraVision Limelight = new CameraVision();
 
     private static PlateCenter sInstance = null;
 
@@ -211,6 +213,10 @@ public class PlateCenter extends Subsystem {
         //TODO: KADEN GET YOUR CRAP
         //Need some sort of command to get the inches
         //from your vision class
+
+        distanceFromCenter= 0.03937007874*Math.tan(Limelight.x)*distanceFromObject;
+
+
         setPosition(0);
 
         return mWantedState;
