@@ -6,6 +6,7 @@ import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 import edu.wpi.first.wpilibj.Ultrasonic;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
@@ -23,6 +24,9 @@ import frc.robot.loops.Looper;
  *
  */
 public class PlateCenter extends Subsystem {
+    DigitalInput LidarOne = new DigitalInput(1);
+    DigitalInput LidarTwo = new DigitalInput(2);
+    DigitalInput LidarThree = new DigitalInput(3);
     double distanceFromCenter;
     double distanceFromObject;
    CameraVision Limelight = new CameraVision();
@@ -49,6 +53,8 @@ public class PlateCenter extends Subsystem {
 
     
     public PlateCenter() {
+       
+
         //Configure Talon
         mBeltTalon = CANTalonFactory.createTalon(Constants.kPlateCenterTalonID,
         false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
@@ -213,10 +219,18 @@ public class PlateCenter extends Subsystem {
         //TODO: KADEN GET YOUR CRAP
         //Need some sort of command to get the inches
         //from your vision class
+        if(LidarTwo.get() == true){
+            distanceFromCenter= Math.tan(Limelight.x)*24;
 
-        distanceFromCenter= 0.03937007874*Math.tan(Limelight.x)*distanceFromObject;
+            if(Limelight.x == 0){
+            stopMotor();
 
+            }
+            if(Limelight.x != 0){
 
+            jog(distanceFromCenter);
+            }
+        }
         setPosition(0);
 
         return mWantedState;
