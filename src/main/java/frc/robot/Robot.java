@@ -32,8 +32,8 @@ public class Robot extends TimedRobot {
     private PlateCenter mPlate = PlateCenter.getInstance();
 
     // Create subsystem manager
-    private final SubsystemManager mSubsystemManager = new SubsystemManager( //TODO: make sure you go back and add these
-            Arrays.asList(mPlate));
+   // private final SubsystemManager mSubsystemManager = new SubsystemManager( //TODO: make sure you go back and add these
+   //         Arrays.asList(mPlate));
 
 
 
@@ -49,7 +49,7 @@ public class Robot extends TimedRobot {
     }
 
     public void zeroAllSensors() {
-        mSubsystemManager.zeroSensors();
+      //  mSubsystemManager.zeroSensors();
     }
 
     /**
@@ -60,7 +60,8 @@ public class Robot extends TimedRobot {
         try {
             CrashTracker.logRobotInit();
 
-            mSubsystemManager.registerEnabledLoops(mEnabledLooper);
+           // mSubsystemManager.registerEnabledLoops(mEnabledLooper);
+            mPlate.registerEnabledLoops(mEnabledLooper);
             //mEnabledLooper.register(RobotStateEstimator.getInstance())
 
            
@@ -103,7 +104,7 @@ public class Robot extends TimedRobot {
 
             // Start loopers
             mEnabledLooper.start();
-            mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+            //mPlate.setWantedState(PlateCenter.SystemState.HOMING);
 
            zeroAllSensors();
             
@@ -133,6 +134,7 @@ public class Robot extends TimedRobot {
         if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
         else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
         else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
+        else if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
             
         mPlate.jog(mControlBoard.getHatchPanelJog());
 
@@ -161,7 +163,8 @@ public class Robot extends TimedRobot {
             mEnabledLooper.stop();
 
             // Call stop on all our Subsystems.
-            mSubsystemManager.stop();
+            //mSubsystemManager.stop();
+            mPlate.stop();
 
             //mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
@@ -208,7 +211,7 @@ public class Robot extends TimedRobot {
     public void allPeriodic() {
         
         //mSubsystemManager.outputToSmartDashboard();
-        mSubsystemManager.writeToLog();
+       // mSubsystemManager.writeToLog();
         //mEnabledLooper.outputToSmartDashboard();
        
         

@@ -163,7 +163,7 @@ public class Constants extends ConstantsBase {
             public static final double kPlateCenterTalonF=0;
 
             public static final double kPlateCenterTicksPerInch=1680 * 1; //TODO: get wheel diam
-            public static final int kPlateCenterTalonSoftLimit=(int) Math.round(5*kPlateCenterTicksPerInch); //TODO: GET this, IMPORTANT
+            public static final int kPlateCenterTalonSoftLimit=(int) Math.round(4*kPlateCenterTicksPerInch); //TODO: GET this, IMPORTANT
         //Pneumatics
         public static final int kPlateCenterSuckSolenoidPort=0;
         public static final int kPlateCenterDeploySolenoidPort=1;

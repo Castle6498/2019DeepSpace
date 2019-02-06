@@ -91,5 +91,10 @@ public class ControlBoard implements ControlBoardInterface {
         return mOperator.getAButton();
     }
 
+    @Override
+    public boolean getPlateHome() {
+        return mOperator.getBButton();
+    }
+
     
 }
