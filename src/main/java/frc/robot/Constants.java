@@ -171,10 +171,10 @@ public class Constants extends ConstantsBase {
                                                             //suck, push, pause, release
         public static final int[] kPlateCenterDeployPauses = {2,4,6,8}; 
         //Ultrasonics
-        public static final int[] kPlateCenterOustideLeftSensorPin = {0,1};
-        public static final int[] kPlateCenterOutsideRightSensorPin = {1,2};
-        public static final int[] kPlateCenterInsideLeftSensorPin = {3,4};
-        public static final int[] kPlateCenterInsideRightSensorPin = {5,6};
+        
+        public static final int kPlateCenterLeftLidar= 1;
+        public static final int kPlateCenterCenterLidar = 2;
+        public static final int kPlateCenterRightLidar = 3;
             public static final double[] kPlateCenterSensorThreshold = {1.5,3};//min,max
     
 

@@ -24,9 +24,9 @@ import frc.robot.loops.Looper;
  *
  */
 public class PlateCenter extends Subsystem {
-    DigitalInput LidarOne = new DigitalInput(1);
-    DigitalInput LidarTwo = new DigitalInput(2);
-    DigitalInput LidarThree = new DigitalInput(3);
+    DigitalInput mLidarOne;
+    DigitalInput mLidarTwo;
+    DigitalInput mLidarThree;
     double distanceFromCenter;
     double distanceFromObject;
    CameraVision Limelight = new CameraVision();
@@ -69,6 +69,10 @@ public class PlateCenter extends Subsystem {
         mBeltTalon = CANTalonFactory.tuneLoops(mBeltTalon, 0, Constants.kPlateCenterTalonP,
         Constants.kPlateCenterTalonI, Constants.kPlateCenterTalonD, Constants.kPlateCenterTalonF);
   
+        //LIDAR
+        mLidarOne = new DigitalInput(Constants.kPlateCenterLeftLidar);
+        mLidarTwo = new DigitalInput(Constants.kPlateCenterCenterLidar);
+        mLidarThree = new DigitalInput(Constants.kPlateCenterRightLidar);
       /*  mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
         mDeploySolenoid = new Solenoid(Constants.kPlateCenterDeploySolenoidPort);
         mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
@@ -185,7 +189,7 @@ public class PlateCenter extends Subsystem {
         if(mStateChanged){
             System.out.println("Centering");
         }
-
+     
         //TODO: Plate Center Code Here
 
        return mWantedState;
@@ -224,18 +228,21 @@ public class PlateCenter extends Subsystem {
         //TODO: KADEN GET YOUR CRAP
         //Need some sort of command to get the inches
         //from your vision class
-        if(LidarTwo.get() == true){
-            distanceFromCenter= Math.tan(Limelight.x)*24;
+        
+            
+            if(mLidarTwo.get() == true){
+                distanceFromCenter= Math.tan(Limelight.x)*24;
 
-            if(Limelight.x == 0){
-            stopMotor();
-
+                if(Limelight.x == 0){
+                stopMotor();
+    
+                }
+                if(Limelight.x != 0){
+    
+                jog(distanceFromCenter);
+                }
             }
-            if(Limelight.x != 0){
-
-            jog(distanceFromCenter);
-            }
-        }
+           
         setPosition(0);
 
         return mWantedState;
