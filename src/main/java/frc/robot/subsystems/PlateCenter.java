@@ -27,6 +27,7 @@ public class PlateCenter extends Subsystem {
     DigitalInput mLidarOne;
     DigitalInput mLidarTwo;
     DigitalInput mLidarThree;
+    double distanceFromLeftBound;
     double distanceFromCenter;
     double distanceFromObject;
    CameraVision Limelight = new CameraVision();
@@ -259,7 +260,7 @@ public class PlateCenter extends Subsystem {
             
             if(mLidarTwo.get() == true){
                 distanceFromCenter= Math.tan(Limelight.x)*24;
-
+                distanceFromLeftBound= distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
                 if(Limelight.x == 0){
                 stopMotor();
     
