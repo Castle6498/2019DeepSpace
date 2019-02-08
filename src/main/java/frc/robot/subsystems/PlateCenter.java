@@ -190,7 +190,7 @@ public class PlateCenter extends Subsystem {
       }
       DiscState discOrient;
       boolean leftRange, rightRange, center;
-      double pos;
+      double inchesToCenter;
       DigitalInput senseZero = new DigitalInput(0);
       DigitalInput senseOne = new DigitalInput(1);
       DigitalInput senseTwo = new DigitalInput(2);
@@ -208,21 +208,19 @@ public class PlateCenter extends Subsystem {
         rightRange = senseTwo.get();
         if(center){
             discOrient = DiscState.CENTER;
-            System.out.println("CENTER");
+            //System.out.println("CENTER");
             stopMotor();
-            //pos = getPositiion();
+            inchesToCenter = getPosition() - slideMiddlePoint; //center point
         }
-        else  if(leftRange){ // move left
+        else  if(leftRange){ //move left
             discOrient = DiscState.MOVELEFT;
-            System.out.println("Move LEFT");
+            //System.out.println("Move LEFT");
             exTal.set(ControlMode.PercentOutput, -.5);
-            
         }
-        else  if(rightRange){ // move right
+        else  if(rightRange){ //move right
             discOrient = DiscState.MOVERIGHT;
-            System.out.println("Move RIGHT");
+            //System.out.println("Move RIGHT");
             exTal.set(ControlMode.PercentOutput, .5);
-
         }
 
        return mWantedState;
