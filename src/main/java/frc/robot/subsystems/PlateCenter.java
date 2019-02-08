@@ -27,7 +27,7 @@ public class PlateCenter extends Subsystem {
     DigitalInput mLidarOne;
     DigitalInput mLidarTwo;
     DigitalInput mLidarThree;
-    double distanceFromLeftBound;
+    double distanceFromRightBound;
     double distanceFromCenter;
     double distanceFromObject;
    CameraVision Limelight = new CameraVision();
@@ -263,16 +263,17 @@ public class PlateCenter extends Subsystem {
         //from your vision class
         
             
-            if(mLidarTwo.get() == true){
+            if(mLidarTwo.get() == true | mLidarOne.get() == true | mLidarThree.get() == true){
                 distanceFromCenter= Math.tan(Limelight.x)*24;
-                distanceFromLeftBound= distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
+                distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
+                
                 if(Limelight.x == 0){
                 stopMotor();
     
                 }
                 if(Limelight.x != 0){
     
-                jog(distanceFromCenter);
+               setPosition(distanceFromRightBound);
                 }
             }
     
@@ -294,6 +295,10 @@ public class PlateCenter extends Subsystem {
 
         public void jog(double amount){
             setPosition(mWantedSetPosition+=amount);
+        }
+
+        public double getPosition(){
+            return mBeltTalon.getSelectedSensorPosition()/Constants.kPlateCenterTalonSoftLimit;
         }
 
         private void positionUpdater(){
