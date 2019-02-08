@@ -185,41 +185,28 @@ public class PlateCenter extends Subsystem {
             return SystemState.HOMING;
         }
     }
-    public enum DiscState{
-        CENTER, MOVELEFT, MOVERIGHT
-      }
-      DiscState discOrient;
-      boolean leftRange, rightRange, center;
-      double inchesToCenter;
-      DigitalInput senseZero = new DigitalInput(0);
-      DigitalInput senseOne = new DigitalInput(1);
-      DigitalInput senseTwo = new DigitalInput(2);
-      TalonSRX exTal = new TalonSRX(8);
+
+    boolean leftRange, rightRange;
+    double inchesToCenter;
+    //DigitalInput senseZero = new DigitalInput(0);
+    DigitalInput senseOne = new DigitalInput(1); // second (right)
+    DigitalInput senseTwo = new DigitalInput(2); //first (left)
+    TalonSRX exTal = new TalonSRX(8);
 
     private SystemState handleCentering() {
         if(mStateChanged){
             System.out.println("Centering");
-        }
-     
+        }    
         //TODO: Plate Center Code Here
         //plate centering
-        leftRange = senseZero.get();
-        center = senseOne.get();       
-        rightRange = senseTwo.get();
-        if(center){
-            discOrient = DiscState.CENTER;
-            //System.out.println("CENTER");
+        setPosition(0);
+        leftRange = senseTwo.get();      
+        rightRange = senseOne.get();
+        if(leftRange && rightRange){
             stopMotor();
             inchesToCenter = getPosition() - slideMiddlePoint; //center point
         }
-        else  if(leftRange){ //move left
-            discOrient = DiscState.MOVELEFT;
-            //System.out.println("Move LEFT");
-            exTal.set(ControlMode.PercentOutput, -.5);
-        }
-        else  if(rightRange){ //move right
-            discOrient = DiscState.MOVERIGHT;
-            //System.out.println("Move RIGHT");
+        else {
             exTal.set(ControlMode.PercentOutput, .5);
         }
 
