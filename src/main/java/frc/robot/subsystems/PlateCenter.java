@@ -31,6 +31,8 @@ public class PlateCenter extends Subsystem {
     double distanceFromCenter;
     double distanceFromObject;
    CameraVision Limelight = new CameraVision();
+   boolean plateIsCentered;
+   boolean plateIsNotCentered;
 
     private static PlateCenter sInstance = null;
 
@@ -189,8 +191,9 @@ public class PlateCenter extends Subsystem {
         CENTER, MOVELEFT, MOVERIGHT
       }
       DiscState discOrient;
-      boolean leftRange, rightRange, center;
-      double inchesToCenter;
+      boolean leftRange;
+      boolean rightRange;
+      boolean center;
       DigitalInput senseZero = new DigitalInput(0);
       DigitalInput senseOne = new DigitalInput(1);
       DigitalInput senseTwo = new DigitalInput(2);
@@ -204,23 +207,19 @@ public class PlateCenter extends Subsystem {
         //TODO: Plate Center Code Here
         //plate centering
         leftRange = senseZero.get();
-        center = senseOne.get();       
+        center = senseOne.get();
         rightRange = senseTwo.get();
         if(center){
             discOrient = DiscState.CENTER;
-            //System.out.println("CENTER");
-            stopMotor();
-            inchesToCenter = getPosition() - slideMiddlePoint; //center point
+            System.out.println("CENTER");
         }
-        else  if(leftRange){ //move left
+        else  if(leftRange){ // move left
             discOrient = DiscState.MOVELEFT;
-            //System.out.println("Move LEFT");
-            exTal.set(ControlMode.PercentOutput, -.5);
+            System.out.println("Move LEFT");
         }
-        else  if(rightRange){ //move right
+        else  if(rightRange){ // move right
             discOrient = DiscState.MOVERIGHT;
-            //System.out.println("Move RIGHT");
-            exTal.set(ControlMode.PercentOutput, .5);
+            System.out.println("Move RIGHT");
         }
 
        return mWantedState;
@@ -261,18 +260,36 @@ public class PlateCenter extends Subsystem {
         //from your vision class
         
             
-            if(mLidarTwo.get() == true | mLidarOne.get() == true | mLidarThree.get() == true){
+            
                 distanceFromCenter= Math.tan(Limelight.x)*24;
                 distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
                 
                 if(Limelight.x == 0){
-                stopMotor();
-    
+               
+                    plateIsCentered =true;
+                    plateIsNotCentered =false;
                 }
                 if(Limelight.x != 0){
     
-               setPosition(distanceFromRightBound);
+               plateIsNotCentered = true;
+               plateIsCentered = false;
                 }
+            
+            leftRange = senseZero.get();
+            center = senseOne.get();
+            rightRange = senseTwo.get();          
+        
+            if(leftRange) {
+              discOrient = DiscState.MOVELEFT;
+              exTal.set(ControlMode.PercentOutput, .5);
+            }
+            else if (rightRange) {
+              discOrient = DiscState.MOVERIGHT;
+              exTal.set(ControlMode.PercentOutput, -.5);
+            }
+            else if (center) {
+              discOrient = DiscState.CENTER;
+              exTal.set(ControlMode.PercentOutput, 0);
             }
     
         setPosition(0);
@@ -365,29 +382,7 @@ public class PlateCenter extends Subsystem {
         public synchronized void setWantedState(SystemState state) {
             mWantedState = state;
         }
-
-        @Override
-        public void outputToSmartDashboard() {
-            // SmartDashboard.putNumber("plateCenter_speed", mMasterTalon.get() / Constants.kPlateCenterSensorGearReduction);
-        }
-
-        @Override
-        public void stop() {
-            setWantedState(SystemState.IDLE);
-            stopMotor();
-            resetPistons();
-        }
-
-        @Override
-        public void zeroSensors() {
-        
-        }
-
-        @Override
-        public void registerEnabledLoops(Looper in) {
-            in.register(mLoop);
-        }
-
+ 
         public boolean checkSystem() {
             System.out.println("Testing FEEDER.-----------------------------------");
             boolean failure=false;       
