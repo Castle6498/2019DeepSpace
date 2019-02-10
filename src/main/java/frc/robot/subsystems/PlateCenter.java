@@ -24,13 +24,13 @@ import frc.robot.loops.Looper;
  *
  */
 public class PlateCenter extends Subsystem {
-    DigitalInput mLidarOne;
-    DigitalInput mLidarTwo;
-    DigitalInput mLidarThree;
+    
+    DigitalInput mLidarOne, mLidarTwo, mLidarThree;
     double distanceFromRightBound;
     double distanceFromCenter;
     double distanceFromObject;
-   CameraVision Limelight = new CameraVision();
+   CameraVision mLimeLight;
+
 
     private static PlateCenter sInstance = null;
 
@@ -248,19 +248,19 @@ public class PlateCenter extends Subsystem {
         //from your vision class
         
             
-            if(mLidarTwo.get() == true | mLidarOne.get() == true | mLidarThree.get() == true){
-                distanceFromCenter= Math.tan(Limelight.x)*24;
-                distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
-                
-                if(Limelight.x == 0){
-                stopMotor();
-    
-                }
-                if(Limelight.x != 0){
-    
-               setPosition(distanceFromRightBound);
-                }
+        if(mLidarTwo.get() == true | mLidarOne.get() == true | mLidarThree.get() == true){
+            distanceFromCenter= Math.tan(mLimeLight.getX())*24;
+            distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
+            
+            if(mLimeLight.getX() == 0){
+            stopMotor();
+
             }
+            if(mLimeLight.getX() != 0){
+
+           setPosition(distanceFromRightBound);
+            }
+        }
     
         setPosition(0);
 

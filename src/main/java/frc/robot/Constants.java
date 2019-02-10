@@ -170,12 +170,13 @@ public class Constants extends ConstantsBase {
         public static final int kPlateCenterHardStopYeeYeeSolenoidPort=2;
                                                             //suck, push, pause, release
         public static final int[] kPlateCenterDeployPauses = {2,4,6,8}; 
-        //Ultrasonics
         
+        //Lidar
         public static final int kPlateCenterLeftLidar= 1;
         public static final int kPlateCenterCenterLidar = 2;
         public static final int kPlateCenterRightLidar = 3;
-            public static final double[] kPlateCenterSensorThreshold = {1.5,3};//min,max
+            
+        public static final double[] kPlateCenterSensorThreshold = {1.5,3};//min,max
     
 
     
