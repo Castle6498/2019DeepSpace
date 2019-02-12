@@ -12,9 +12,17 @@ NetworkTableEntry ty = table.getEntry("ty");
 NetworkTableEntry ta = table.getEntry("ta");
 
 //read values periodically
-public double x = tx.getDouble(0.0);
-double y = ty.getDouble(0.0);
-double area = ta.getDouble(0.0);
+public double getX(){
+	return table.getEntry("tx").getDouble(0.0);
+}
+
+public double getY(){
+	return table.getEntry("ty").getDouble(0.0);
+}
+
+public double getArea(){
+	return table.getEntry("ta").getDouble(0.0);
+}
 
 //post to smart dashboard periodically
 
