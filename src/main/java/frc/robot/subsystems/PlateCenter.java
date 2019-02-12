@@ -8,7 +8,6 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.DigitalInput;
 
-import edu.wpi.first.wpilibj.Ultrasonic;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.CameraVision;
 import frc.robot.Constants;
@@ -24,25 +23,13 @@ import frc.robot.loops.Looper;
  *
  */
 public class PlateCenter extends Subsystem {
-<<<<<<< HEAD
-    DigitalInput mLidarOne;
-    DigitalInput mLidarTwo;
-    DigitalInput mLidarThree;
-    double distanceFromLeftBound;
-    double distanceFromCenter;
-    double distanceFromObject;
-   CameraVision Limelight = new CameraVision();
-   boolean plateIsCentered;
-   boolean plateIsNotCentered;
-=======
     
-    DigitalInput mLidarOne, mLidarTwo, mLidarThree;
+    DigitalInput mLidarOne, mLidarTwo;
     double distanceFromRightBound;
     double distanceFromCenter;
     double distanceFromObject;
    CameraVision mLimeLight;
 
->>>>>>> 065d44ba73c4802aa08d4640ade84e225b97675b
 
     private static PlateCenter sInstance = null;
 
@@ -84,8 +71,7 @@ public class PlateCenter extends Subsystem {
   
         //LIDAR
         mLidarOne = new DigitalInput(Constants.kPlateCenterLeftLidar);
-        mLidarTwo = new DigitalInput(Constants.kPlateCenterCenterLidar);
-        mLidarThree = new DigitalInput(Constants.kPlateCenterRightLidar);
+        mLidarTwo = new DigitalInput(Constants.kPlateCenterRightLidar);
       /*  mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
         mDeploySolenoid = new Solenoid(Constants.kPlateCenterDeploySolenoidPort);
         mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
@@ -197,19 +183,6 @@ public class PlateCenter extends Subsystem {
             return SystemState.HOMING;
         }
     }
-<<<<<<< HEAD
-    public enum DiscState{
-        CENTER, MOVELEFT, MOVERIGHT
-      }
-      DiscState discOrient;
-      boolean leftRange;
-      boolean rightRange;
-      boolean center;
-      DigitalInput senseZero = new DigitalInput(0);
-      DigitalInput senseOne = new DigitalInput(1);
-      DigitalInput senseTwo = new DigitalInput(2);
-      TalonSRX exTal = new TalonSRX(8);
-=======
 
     boolean leftRange, rightRange;
     double inchesToCenter;
@@ -217,7 +190,6 @@ public class PlateCenter extends Subsystem {
     DigitalInput senseOne = new DigitalInput(1); // second (right)
     DigitalInput senseTwo = new DigitalInput(2); //first (left)
     TalonSRX exTal = new TalonSRX(8);
->>>>>>> cbae04dd0e95520e6b93584a5c45d200dd22efe7
 
     private SystemState handleCentering() {
         if(mStateChanged){
@@ -225,23 +197,9 @@ public class PlateCenter extends Subsystem {
         }    
         //TODO: Plate Center Code Here
         //plate centering
-<<<<<<< HEAD
-        leftRange = senseZero.get();
-        center = senseOne.get();
-        rightRange = senseTwo.get();
-        if(center){
-            discOrient = DiscState.CENTER;
-            System.out.println("CENTER");
-        }
-        else  if(leftRange){ // move left
-            discOrient = DiscState.MOVELEFT;
-            System.out.println("Move LEFT");
-        }
-        else  if(rightRange){ // move right
-            discOrient = DiscState.MOVERIGHT;
-            System.out.println("Move RIGHT");
 
-        setPosition(0);
+        setPosition(0); //You have to wait until it gets to the actual position use
+        //Like use atPosition() to know if it is moved, then move forward to percent output
         leftRange = senseTwo.get();      
         rightRange = senseOne.get();
         if(leftRange && rightRange){
@@ -250,7 +208,6 @@ public class PlateCenter extends Subsystem {
         }
         else {
             exTal.set(ControlMode.PercentOutput, .5);
->>>>>>> cbae04dd0e95520e6b93584a5c45d200dd22efe7
         }
 
        return mWantedState;
@@ -291,54 +248,27 @@ public class PlateCenter extends Subsystem {
         //from your vision class
         
             
-<<<<<<< HEAD
-            
-                distanceFromCenter= Math.tan(Limelight.x)*24;
-                distanceFromLeftBound= distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
-                
-                if(Limelight.x == 0){
-               
-                    plateIsCentered =true;
-                    plateIsNotCentered =false;
-                }
-                if(Limelight.x != 0){
-                    setPosition(distanceFromLeftBound);
-               plateIsNotCentered = true;
-               plateIsCentered = false;
-                }
-            
-            leftRange = senseZero.get();
-            center = senseOne.get();
-            rightRange = senseTwo.get();          
-        
-            if(leftRange) {
-              discOrient = DiscState.MOVELEFT;
-              exTal.set(ControlMode.PercentOutput, .5);
-            }
-            else if (rightRange) {
-              discOrient = DiscState.MOVERIGHT;
-              exTal.set(ControlMode.PercentOutput, -.5);
-            }
-            else if (center) {
-              discOrient = DiscState.CENTER;
-              exTal.set(ControlMode.PercentOutput, 0);
-=======
-        if(mLidarTwo.get() == true | mLidarOne.get() == true | mLidarThree.get() == true){
+        if(mStateChanged){
             distanceFromCenter= Math.tan(mLimeLight.getX())*24;
             distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
             
-            if(mLimeLight.getX() == 0){
+            if(mLimeLight.getX() == 0){ //Kaden its basically never going to be 0, just a tiny bit off
             stopMotor();
 
->>>>>>> 065d44ba73c4802aa08d4640ade84e225b97675b
             }
             if(mLimeLight.getX() != 0){
 
            setPosition(distanceFromRightBound);
             }
         }
-    
-        setPosition(0);
+        
+        //Why would you have this line ? :
+        //setPosition(0);
+
+        /*You are going to have to sense when it is at the correct position
+        *use the atPosition() method to see when it is at the current setPosition setpoint
+        *This is where you need to leave space for the light code (just leave a TODO statement like in 260)
+        */
 
         return mWantedState;
     }
@@ -360,6 +290,14 @@ public class PlateCenter extends Subsystem {
 
         public double getPosition(){
             return mBeltTalon.getSelectedSensorPosition()/Constants.kPlateCenterTalonSoftLimit;
+        }
+
+        public boolean atPosition(){
+           if(Math.abs(mBeltTalon.getClosedLoopTarget()-mBeltTalon.getSelectedSensorPosition())<=Constants.kPlateCenterTalonTolerance){
+               return true;
+           }else{
+               return false;
+           }
         }
 
         private void positionUpdater(){
@@ -387,37 +325,6 @@ public class PlateCenter extends Subsystem {
             suck(false);
             push(false);
         }
-    
-    //Sensor Controls
-        public boolean getAnySensor(){
-            for(SensorSide sensorSide : SensorSide.values()){
-                if(getSensor(sensorSide)) return true;                
-            }
-            return false;
-        }
-
-        public boolean getSensor(SensorSide side){
-            switch(side){
-              /*  case OUTSIDELEFT: //TODO update for DIO
-                    return getSpecificSensor(mTriggerOutsideLeft);
-                case OUTSIDERIGHT:
-                    return getSpecificSensor(mTriggerOutsideRight);
-                case INSIDELEFT:
-                    return getSpecificSensor(mTriggerInsideLeft);
-                case INSIDERIGHT:
-                    return getSpecificSensor(mTriggerInsideRight);*/
-                default: 
-                    return false;
-            }
-        }
-
-        public boolean getSpecificSensor(Ultrasonic sensor){
-            double distance = sensor.getRangeInches();
-            if(distance>=Constants.kPlateCenterSensorThreshold[0]&&
-            distance<=Constants.kPlateCenterSensorThreshold[1]){
-            return true;
-            }else return false;
-        }
 
     //Boring Stuff
 
@@ -433,6 +340,26 @@ public class PlateCenter extends Subsystem {
             System.out.println("Testing FEEDER.-----------------------------------");
             boolean failure=false;       
             return !failure;
+        }
+
+        @Override
+        public void outputToSmartDashboard() {
+
+        }
+
+        @Override
+        public void stop() {
+
+        }
+
+        @Override
+        public void zeroSensors() {
+
+        }
+
+        @Override
+        public void registerEnabledLoops(Looper enabledLooper) {
+
         }
 
 }

@@ -153,32 +153,30 @@ public class Constants extends ConstantsBase {
             public static final double kSuspensionWheelTicksPerInch=1680 * 1; //TODO: get wheel diam
             public static final double kSuspensionWheelTolerance = 5;
     
-    //PlateCenter -----------------------------------------------------------
+     //PlateCenter -----------------------------------------------------------
     
         //Talon
-        public static final int kPlateCenterTalonID=8;
+        public static final int kPlateCenterTalonID=0;
             public static final double kPlateCenterTalonP=20;
             public static final double kPlateCenterTalonI=0;
             public static final double kPlateCenterTalonD=0;
             public static final double kPlateCenterTalonF=0;
 
             public static final double kPlateCenterTicksPerInch=1680 * 1; //TODO: get wheel diam
-            public static final int kPlateCenterTalonSoftLimit=(int) Math.round(4*kPlateCenterTicksPerInch); //TODO: GET this, IMPORTANT
+            public static final int kPlateCenterTalonSoftLimit=(int) Math.round(5*kPlateCenterTicksPerInch); //TODO: GET this, IMPORTANT
+            public static final int kPlateCenterTalonTolerance = 5;
+
         //Pneumatics
         public static final int kPlateCenterSuckSolenoidPort=0;
         public static final int kPlateCenterDeploySolenoidPort=1;
         public static final int kPlateCenterHardStopYeeYeeSolenoidPort=2;
                                                             //suck, push, pause, release
         public static final int[] kPlateCenterDeployPauses = {2,4,6,8}; 
-        
         //Lidar
         public static final int kPlateCenterLeftLidar= 1;
         public static final int kPlateCenterCenterLidar = 2;
         public static final int kPlateCenterRightLidar = 3;
             
-        public static final double[] kPlateCenterSensorThreshold = {1.5,3};//min,max
-    
-
     
 
     @Override
