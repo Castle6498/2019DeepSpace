@@ -27,7 +27,7 @@ public class PlateCenter extends Subsystem {
     DigitalInput mLidarOne;
     DigitalInput mLidarTwo;
     DigitalInput mLidarThree;
-    double distanceFromRightBound;
+    double distanceFromLeftBound;
     double distanceFromCenter;
     double distanceFromObject;
    CameraVision Limelight = new CameraVision();
@@ -187,6 +187,7 @@ public class PlateCenter extends Subsystem {
             return SystemState.HOMING;
         }
     }
+<<<<<<< HEAD
     public enum DiscState{
         CENTER, MOVELEFT, MOVERIGHT
       }
@@ -198,14 +199,23 @@ public class PlateCenter extends Subsystem {
       DigitalInput senseOne = new DigitalInput(1);
       DigitalInput senseTwo = new DigitalInput(2);
       TalonSRX exTal = new TalonSRX(8);
+=======
+
+    boolean leftRange, rightRange;
+    double inchesToCenter;
+    //DigitalInput senseZero = new DigitalInput(0);
+    DigitalInput senseOne = new DigitalInput(1); // second (right)
+    DigitalInput senseTwo = new DigitalInput(2); //first (left)
+    TalonSRX exTal = new TalonSRX(8);
+>>>>>>> cbae04dd0e95520e6b93584a5c45d200dd22efe7
 
     private SystemState handleCentering() {
         if(mStateChanged){
             System.out.println("Centering");
-        }
-     
+        }    
         //TODO: Plate Center Code Here
         //plate centering
+<<<<<<< HEAD
         leftRange = senseZero.get();
         center = senseOne.get();
         rightRange = senseTwo.get();
@@ -220,6 +230,17 @@ public class PlateCenter extends Subsystem {
         else  if(rightRange){ // move right
             discOrient = DiscState.MOVERIGHT;
             System.out.println("Move RIGHT");
+
+        setPosition(0);
+        leftRange = senseTwo.get();      
+        rightRange = senseOne.get();
+        if(leftRange && rightRange){
+            stopMotor();
+            inchesToCenter = getPosition() - slideMiddlePoint; //center point
+        }
+        else {
+            exTal.set(ControlMode.PercentOutput, .5);
+>>>>>>> cbae04dd0e95520e6b93584a5c45d200dd22efe7
         }
 
        return mWantedState;
@@ -262,7 +283,7 @@ public class PlateCenter extends Subsystem {
             
             
                 distanceFromCenter= Math.tan(Limelight.x)*24;
-                distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
+                distanceFromLeftBound= distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
                 
                 if(Limelight.x == 0){
                
@@ -270,7 +291,7 @@ public class PlateCenter extends Subsystem {
                     plateIsNotCentered =false;
                 }
                 if(Limelight.x != 0){
-    
+                    setPosition(distanceFromLeftBound);
                plateIsNotCentered = true;
                plateIsCentered = false;
                 }
