@@ -55,7 +55,7 @@ public class Drive extends Subsystem {
         
          //Talon Initialization 
             mLeftMaster = CANTalonFactory.createTalon(Constants.kDriveLeftTalonID, 
-            true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+            false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
     
             mLeftMaster = CANTalonFactory.setupHardLimits(mLeftMaster, LimitSwitchSource.Deactivated,
             LimitSwitchNormal.Disabled, false, LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled,false);
@@ -66,7 +66,7 @@ public class Drive extends Subsystem {
             Constants.kDriveLeftTalonI, Constants.kDriveLeftTalonD, Constants.kDriveLeftTalonF);
 
             mRightMaster = CANTalonFactory.createTalon(Constants.kDriveRightTalonID, 
-            true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+            false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
     
             mRightMaster = CANTalonFactory.setupHardLimits(mRightMaster, LimitSwitchSource.Deactivated,
             LimitSwitchNormal.Disabled, false, LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled,false);
@@ -80,7 +80,7 @@ public class Drive extends Subsystem {
         
         //Victor Initialization
             mLeftSlave = new VictorSPX(Constants.kDriveLeftVictorID);
-            mLeftSlave.setInverted(true);
+            mLeftSlave.setInverted(false);
             mLeftSlave.follow(mLeftMaster);
             
             mRightSlave = new VictorSPX(Constants.kDriveRightVictorID);
