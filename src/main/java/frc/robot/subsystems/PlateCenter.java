@@ -6,8 +6,10 @@ import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import edu.wpi.first.wpilibj.DigitalInput;
 
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Solenoid;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.CameraVision;
 import frc.robot.Constants;
@@ -28,7 +30,8 @@ public class PlateCenter extends Subsystem {
     double distanceFromRightBound;
     double distanceFromCenter;
     double distanceFromObject;
-   CameraVision mLimeLight;
+  // CameraVision mLimeLight;
+   //Compressor compressor;
 
 
     private static PlateCenter sInstance = null;
@@ -43,13 +46,8 @@ public class PlateCenter extends Subsystem {
     private TalonSRX mBeltTalon;
    // private final Solenoid mSuckSolenoid, mDeploySolenoid, mHardStopYeeYeeSolenoid;
    // private final Ultrasonic mTriggerOutsideLeft, mTriggerOutsideRight, mTriggerInsideLeft, mTriggerInsideRight;
-//TODO use dio instead of ultrasonic for lazzzers
-    public enum SensorSide {
-        OUTSIDELEFT,
-        OUTSIDERIGHT,//TODO eliminate one of the outsides
-        INSIDELEFT,
-        INSIDERIGHT
-    }
+
+ 
 
     
     public PlateCenter() {
@@ -63,7 +61,7 @@ public class PlateCenter extends Subsystem {
         LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector,
         LimitSwitchNormal.NormallyOpen, true);
 
-        mBeltTalon = CANTalonFactory.setupSoftLimits(mBeltTalon, true, Constants.kPlateCenterTalonSoftLimit,
+        mBeltTalon = CANTalonFactory.setupSoftLimits(mBeltTalon, true, (int) Math.round(Constants.kPlateCenterTalonSoftLimit*Constants.kPlateCenterTicksPerInch),
         false, 0);
 
         mBeltTalon = CANTalonFactory.tuneLoops(mBeltTalon, 0, Constants.kPlateCenterTalonP,
@@ -72,16 +70,20 @@ public class PlateCenter extends Subsystem {
         //LIDAR
         mLidarOne = new DigitalInput(Constants.kPlateCenterLeftLidar);
         mLidarTwo = new DigitalInput(Constants.kPlateCenterRightLidar);
-      /*  mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
+
+
+        /*
+        mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
         mDeploySolenoid = new Solenoid(Constants.kPlateCenterDeploySolenoidPort);
         mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
-
+/*
         mTriggerOutsideLeft = new Ultrasonic(Constants.kPlateCenterOustideLeftSensorPin[0], Constants.kPlateCenterOustideLeftSensorPin[1]);
         mTriggerOutsideRight = new Ultrasonic(Constants.kPlateCenterOutsideRightSensorPin[0], Constants.kPlateCenterOutsideRightSensorPin[1]);
         mTriggerInsideLeft = new Ultrasonic(Constants.kPlateCenterInsideLeftSensorPin[0], Constants.kPlateCenterInsideLeftSensorPin[1]);
         mTriggerInsideRight = new Ultrasonic(Constants.kPlateCenterInsideRightSensorPin[0], Constants.kPlateCenterInsideRightSensorPin[1]);
 
 */
+        //compressor = new Compressor();
     }
 
     public enum SystemState {
@@ -102,6 +104,7 @@ public class PlateCenter extends Subsystem {
         @Override
         public void onStart(double timestamp) {
             stop();
+            //compressor.start();
             synchronized (PlateCenter.this) {
                 System.out.println("Plate onStart");
                 mSystemState = SystemState.IDLE;
@@ -151,13 +154,19 @@ public class PlateCenter extends Subsystem {
         }
     };  //LOOP SET ENDS HERE
 
+
+    private SystemState defaultIdleTest(){
+        if(mSystemState == mWantedState) return SystemState.IDLE;
+        else return mWantedState;
+    }
+
     private SystemState handleIdle() {
         if(mStateChanged){
             stopMotor();
             resetPistons();
         }
        
-        return mWantedState;
+        return defaultIdleTest();
     }
     
     private boolean hasHomed = false;
@@ -172,13 +181,16 @@ public class PlateCenter extends Subsystem {
         if(!hasHomed&&mBeltTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
             System.out.println("home done");
-            setPosition(2);
+            setPosition(Constants.kPlateCenterTalonSoftLimit/2);
         }
 
 
         if(hasHomed){
-        
-        return mWantedState;
+            if(atPosition()){
+            return defaultIdleTest();
+            }else{
+                return mWantedState;
+            }
         }else{
             return SystemState.HOMING;
         }
@@ -186,31 +198,45 @@ public class PlateCenter extends Subsystem {
 
     boolean leftRange, rightRange;
     double inchesToCenter;
+    boolean plateCentered=false;
+    enum CenteringState {FARLIMIT, SENSE, DONE};
+    CenteringState centeringState = CenteringState.FARLIMIT;
     //DigitalInput senseZero = new DigitalInput(0);
-    DigitalInput senseOne = new DigitalInput(1); // second (right)
-    DigitalInput senseTwo = new DigitalInput(2); //first (left)
     TalonSRX exTal = new TalonSRX(8);
 
     private SystemState handleCentering() {
         if(mStateChanged){
             System.out.println("Centering");
+            setPosition(0);
+            centeringState = CenteringState.FARLIMIT;
+            plateCentered=false;
         }    
-        //TODO: Plate Center Code Here
-        //plate centering
-
-        setPosition(0); //You have to wait until it gets to the actual position use
-        //Like use atPosition() to know if it is moved, then move forward to percent output
-        leftRange = senseTwo.get();      
-        rightRange = senseOne.get();
-        if(leftRange && rightRange){
-            stopMotor();
-            inchesToCenter = getPosition() - slideMiddlePoint; //center point
+       
+        switch(centeringState){
+            case FARLIMIT:
+            if(atPosition()){
+                mBeltTalon.set(ControlMode.PercentOutput,.2);
+                centeringState=CenteringState.SENSE;
+            }
+            case SENSE:
+                leftRange = mLidarOne.get();      
+                rightRange = mLidarTwo.get();
+                if(leftRange && rightRange){
+                    stopMotor();
+                    inchesToCenter = getPosition() - slideMiddlePoint; //center point
+                    System.out.println("centered succesfully");
+                    centeringState = CenteringState.DONE;
+                    plateCentered=true;
+                }else if(getPosition()>=Constants.kPlateCenterTalonSoftLimit/Constants.kPlateCenterTicksPerInch) {
+                    System.out.println("center failed");
+                    centeringState = CenteringState.DONE;
+                    plateCentered=false;
+                }
+            
         }
-        else {
-            exTal.set(ControlMode.PercentOutput, .5);
-        }
 
-       return mWantedState;
+        if(centeringState==CenteringState.DONE)return defaultIdleTest();
+        else return mWantedState;
     }
     
     private SystemState handleDeployingPlate(double now, double startStartedAt) {
@@ -235,7 +261,7 @@ public class PlateCenter extends Subsystem {
             suck(false);
             push(false);
         }else{
-           return mWantedState; //TODO: Calibrate times in constants
+           return defaultIdleTest(); //TODO: Calibrate times in constants
         }
         
         return SystemState.DEPLOYINGPLATE;
@@ -247,7 +273,7 @@ public class PlateCenter extends Subsystem {
         //Need some sort of command to get the inches
         //from your vision class
         
-            
+            /*
         if(mStateChanged){
             distanceFromCenter= Math.tan(mLimeLight.getX())*24;
             distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
@@ -271,6 +297,8 @@ public class PlateCenter extends Subsystem {
         */
 
         return mWantedState;
+
+        //TODO: defaultIdleState
     }
     
    
@@ -281,7 +309,7 @@ public class PlateCenter extends Subsystem {
 
         public synchronized void setPosition(double pos){
             mWantedSetPosition=pos;
-            System.out.println("Set wanted pos to "+pos);
+           // System.out.println("Set wanted pos to "+pos);
         }
 
         public void jog(double amount){
@@ -312,13 +340,16 @@ public class PlateCenter extends Subsystem {
 
     //Pneumatic Controls
         private void suck(boolean s){
-           // mSuckSolenoid.set(s);
+           //mSuckSolenoid.set(s);
+           System.out.println("Suck solenoid: "+s);
         }
         private void push(boolean p){
-           // mDeploySolenoid.set(p);
+          // mDeploySolenoid.set(p);
+          System.out.println("Push solenoid: "+p);
         }
         private void hardStop(boolean h){
-          //  mHardStopYeeYeeSolenoid.set(h);
+         // mHardStopYeeYeeSolenoid.set(h);
+         System.out.println("HardStop solenoid: "+h);
         }
         private void resetPistons(){
             hardStop(false);
@@ -349,7 +380,8 @@ public class PlateCenter extends Subsystem {
 
         @Override
         public void stop() {
-
+           // compressor.stop();
+            setWantedState(SystemState.IDLE);
         }
 
         @Override

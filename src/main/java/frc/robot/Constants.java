@@ -24,7 +24,7 @@ public class Constants extends ConstantsBase {
 
     
     //Autonomous
-        //Climbing Top Platform
+        //Climbing Top Platform TODO: Test climb on platform - how to run AUTO in teleop???
         public static final double firstLiftHeight=6;
         public static final double firstLiftDriveForward=2;
         public static final double frontRaiseHeight=0;
@@ -33,13 +33,13 @@ public class Constants extends ConstantsBase {
         public static final double thirdDriveForward=2;
     // Drive
          //Talon
-        public static final int kDriveLeftTalonID=0;
+        public static final int kDriveLeftTalonID=9;
         public static final double kDriveLeftTalonP=20;
         public static final double kDriveLeftTalonI=0;
         public static final double kDriveLeftTalonD=0;
         public static final double kDriveLeftTalonF=0;
 
-        public static final int kDriveRightTalonID=0;
+        public static final int kDriveRightTalonID=3;
         public static final double kDriveRightTalonP=20;
         public static final double kDriveRightTalonI=0;
         public static final double kDriveRightTalonD=0;
@@ -49,18 +49,18 @@ public class Constants extends ConstantsBase {
         public static final double kDriveTolerance=5;
 
         //Victor
-        public static final int kDriveLeftVictorID=0;
-        public static final int kDriveRightVictorID=0;
-    //Ball Control Helper
+        public static final int kDriveLeftVictorID=2;
+        public static final int kDriveRightVictorID=1;
+    //Ball Control Helper TODO: Get all of these crazy things
         //PickUp
-            public static final double kLiftPickUpFloor = 0;
-            public static final double kWristPickUpFloor = 0;
-            public static final double kLiftPickUpLoadingStation = 0;
+            public static final double kLiftPickUpFloor = 10;
+            public static final double kWristPickUpFloor = 90;
+            public static final double kLiftPickUpLoadingStation = 5;
             public static final double kWristPickUpLoadingStation = 0;
 
         //Shoot Height
-            public static final double kLiftShootCargoShip = 0;
-            public static final double kWristShootCargoShip = 0;
+            public static final double kLiftShootCargoShip = 20;
+            public static final double kWristShootCargoShip = 45;
 
             public static final double kLiftShootRocketOne = 0;
             public static final double kWristShootRocketOne = 0;
@@ -89,8 +89,8 @@ public class Constants extends ConstantsBase {
         //Talon
         public static final int kIntakeTalonChannel=0;
 
-        public static final double kIntakePickUpSpeed=1;
-        public static final double kIntakeShootSpeed=-1;
+        public static final double kIntakePickUpSpeed=.5;
+        public static final double kIntakeShootSpeed=-.5;
 
         public static final double kIntakePickUpPause = 2; //TODO - tune intake pause
         public static final double kIntakeShootPause = 2; //TODO - tune shoot pause
@@ -102,26 +102,27 @@ public class Constants extends ConstantsBase {
     
         //Talon
         public static final int kWristTalonID=0;
-        public static final double kWristTalonP=20;
+        public static final int kWristChildTalonID=12; //TODO:IDK WHAT THIS IS
+        public static final double kWristTalonP=1;
         public static final double kWristTalonI=0;
         public static final double kWristTalonD=0;
         public static final double kWristTalonF=0;
 
-        public static final double kWristTicksPerInch=1680 * 1; //TODO: get wheel diam
-        public static final int kWristSoftLimit=(int) Math.round(5*kWristTicksPerInch); //TODO: GET this, IMPORTANT
+        public static final double kWristTicksPerDeg=1024/360; //TODO: get wheel diam
+        public static final double kWristSoftLimit=110; //TODO: GET this, IMPORTANT
         public static final double kWristTolerance = 5;
 
     //Lift -----------------------------------------------------------
     
         //Talon
         public static final int kLiftTalonID=0;
-        public static final double kLiftTalonP=20;
+        public static final double kLiftTalonP=1;
         public static final double kLiftTalonI=0;
         public static final double kLiftTalonD=0;
         public static final double kLiftTalonF=0;
 
-        public static final double kLiftTicksPerInch=1680 * 1; //TODO: get wheel diam
-        public static final int kLiftSoftLimit=(int) Math.round(5*kLiftTicksPerInch); //TODO: GET this, IMPORTANT
+        public static final double kLiftTicksPerInch=4096 /(1.4*Math.PI); //TODO: get wheel diam
+        public static final double kLiftSoftLimit=28; //TODO: GET this, IMPORTANT
 
         public static final double kLiftTolerance = 5;
 
@@ -153,7 +154,7 @@ public class Constants extends ConstantsBase {
             public static final double kSuspensionWheelTicksPerInch=1680 * 1; //TODO: get wheel diam
             public static final double kSuspensionWheelTolerance = 5;
     
-     //PlateCenter -----------------------------------------------------------
+    //PlateCenter -----------------------------------------------------------
     
         //Talon
         public static final int kPlateCenterTalonID=0;
@@ -162,14 +163,14 @@ public class Constants extends ConstantsBase {
             public static final double kPlateCenterTalonD=0;
             public static final double kPlateCenterTalonF=0;
 
-            public static final double kPlateCenterTicksPerInch=1680 * 1; //TODO: get wheel diam
-            public static final int kPlateCenterTalonSoftLimit=(int) Math.round(5*kPlateCenterTicksPerInch); //TODO: GET this, IMPORTANT
+            public static final double kPlateCenterTicksPerInch=1680 / (2.24*Math.PI); //TODO: get wheel diam
+            public static final double kPlateCenterTalonSoftLimit=15.4375; //TODO: GET this, IMPORTANT
             public static final int kPlateCenterTalonTolerance = 5;
 
         //Pneumatics
         public static final int kPlateCenterSuckSolenoidPort=0;
-        public static final int kPlateCenterDeploySolenoidPort=1;
-        public static final int kPlateCenterHardStopYeeYeeSolenoidPort=2;
+        public static final int kPlateCenterDeploySolenoidPort=2;
+        public static final int kPlateCenterHardStopYeeYeeSolenoidPort=1;
                                                             //suck, push, pause, release
         public static final int[] kPlateCenterDeployPauses = {2,4,6,8}; 
         //Lidar
@@ -177,6 +178,9 @@ public class Constants extends ConstantsBase {
         public static final int kPlateCenterCenterLidar = 2;
         public static final int kPlateCenterRightLidar = 3;
             
+        
+    
+
     
 
     @Override

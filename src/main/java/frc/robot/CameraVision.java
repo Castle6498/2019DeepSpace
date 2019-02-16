@@ -24,6 +24,7 @@ public double getArea(){
 	return table.getEntry("ta").getDouble(0.0);
 }
 
+
 //post to smart dashboard periodically
 
 }
