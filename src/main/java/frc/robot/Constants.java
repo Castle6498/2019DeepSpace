@@ -101,8 +101,8 @@ public class Constants extends ConstantsBase {
     //Wrist -----------------------------------------------------------
     
         //Talon
-        public static final int kWristTalonID=0;
-        public static final int kWristChildTalonID=12; //TODO:IDK WHAT THIS IS
+        public static final int kWristTalonID=8;
+        public static final int kWristChildTalonID=0; //TODO:IDK WHAT THIS IS
         public static final double kWristTalonP=1;
         public static final double kWristTalonI=0;
         public static final double kWristTalonD=0;
@@ -115,7 +115,7 @@ public class Constants extends ConstantsBase {
     //Lift -----------------------------------------------------------
     
         //Talon
-        public static final int kLiftTalonID=0;
+        public static final int kLiftTalonID=10;
         public static final double kLiftTalonP=1;
         public static final double kLiftTalonI=0;
         public static final double kLiftTalonD=0;
@@ -157,27 +157,31 @@ public class Constants extends ConstantsBase {
     //PlateCenter -----------------------------------------------------------
     
         //Talon
-        public static final int kPlateCenterTalonID=0;
+        public static final int kPlateCenterTalonID=7;
             public static final double kPlateCenterTalonP=20;
             public static final double kPlateCenterTalonI=0;
             public static final double kPlateCenterTalonD=0;
             public static final double kPlateCenterTalonF=0;
 
             public static final double kPlateCenterTicksPerInch=1680 / (2.24*Math.PI); //TODO: get wheel diam
-            public static final double kPlateCenterTalonSoftLimit=15.4375; //TODO: GET this, IMPORTANT
-            public static final int kPlateCenterTalonTolerance = 5;
+            public static final double kPlateCenterTalonSoftLimit=15; //TODO: GET this, IMPORTANT
+            public static final double kPlateCenterTalonTolerance = 1;
 
         //Pneumatics
-        public static final int kPlateCenterSuckSolenoidPort=0;
-        public static final int kPlateCenterDeploySolenoidPort=2;
+        public static final int kPlateCenterSuckSolenoidPort=2;
+        public static final int[] kPlateCenterDeploySolenoidPort={0,4};
         public static final int kPlateCenterHardStopYeeYeeSolenoidPort=1;
                                                             //suck, push, pause, release
-        public static final int[] kPlateCenterDeployPauses = {2,4,6,8}; 
-        //Lidar
+        public static final double[] kPlateCenterDeployPauses = {.75,1,2.5,2.75}; 
+        //Lidar                                             the pause is in the space between
         public static final int kPlateCenterLeftLidar= 1;
         public static final int kPlateCenterCenterLidar = 2;
         public static final int kPlateCenterRightLidar = 3;
             
+        //0 extend push off 4 retract
+        //1 hardstop
+        //suck 2
+        //3 shifter
         
     
 

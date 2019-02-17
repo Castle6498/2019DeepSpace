@@ -43,8 +43,8 @@ public class Robot extends TimedRobot {
 
     // Create subsystem manager
     private final SubsystemManager mSubsystemManager = new SubsystemManager( 
-            Arrays.asList(Drive.getInstance(), Intake.getInstance(),Lift.getInstance(),
-            PlateCenter.getInstance(),Wrist.getInstance(),BallControlHelper.getInstance()));
+            Arrays.asList(mDrive, Intake.getInstance(),Lift.getInstance(),
+           mPlate,Wrist.getInstance(),BallControlHelper.getInstance()));
 
     // Initialize other helper objects
     private ControlBoardInterface mControlBoard = ControlBoard.getInstance();
@@ -169,12 +169,13 @@ public class Robot extends TimedRobot {
 
            // boolean wants_aim_button = mControlBoard.getAimButton();
 
-        mDrive.setOpenLoop(mControlBoard.getDriveSignal());
+      mDrive.setOpenLoop(mControlBoard.getDriveSignal());
           
         if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
-        else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
-        else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
-        else if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+         if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
+         if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
+         if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+       // System.out.println(mControlBoard.getPlateHome());
             
         mPlate.jog(mControlBoard.getHatchPanelJog());
 

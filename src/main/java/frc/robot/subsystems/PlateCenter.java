@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.CameraVision;
@@ -31,7 +32,7 @@ public class PlateCenter extends Subsystem {
     double distanceFromCenter;
     double distanceFromObject;
   // CameraVision mLimeLight;
-   //Compressor compressor;
+   Compressor compressor;
 
 
     private static PlateCenter sInstance = null;
@@ -44,7 +45,8 @@ public class PlateCenter extends Subsystem {
     }
 
     private TalonSRX mBeltTalon;
-   // private final Solenoid mSuckSolenoid, mDeploySolenoid, mHardStopYeeYeeSolenoid;
+    private final Solenoid mSuckSolenoid, mHardStopYeeYeeSolenoid;
+    private final DoubleSolenoid mDeploySolenoid;
    // private final Ultrasonic mTriggerOutsideLeft, mTriggerOutsideRight, mTriggerInsideLeft, mTriggerInsideRight;
 
  
@@ -68,22 +70,17 @@ public class PlateCenter extends Subsystem {
         Constants.kPlateCenterTalonI, Constants.kPlateCenterTalonD, Constants.kPlateCenterTalonF);
   
         //LIDAR
-        mLidarOne = new DigitalInput(Constants.kPlateCenterLeftLidar);
-        mLidarTwo = new DigitalInput(Constants.kPlateCenterRightLidar);
+            mLidarOne = new DigitalInput(Constants.kPlateCenterLeftLidar);
+            mLidarTwo = new DigitalInput(Constants.kPlateCenterRightLidar);
 
 
-        /*
+        
         mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
-        mDeploySolenoid = new Solenoid(Constants.kPlateCenterDeploySolenoidPort);
+        mDeploySolenoid = new DoubleSolenoid(Constants.kPlateCenterDeploySolenoidPort[0],Constants.kPlateCenterDeploySolenoidPort[1]);
         mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
-/*
-        mTriggerOutsideLeft = new Ultrasonic(Constants.kPlateCenterOustideLeftSensorPin[0], Constants.kPlateCenterOustideLeftSensorPin[1]);
-        mTriggerOutsideRight = new Ultrasonic(Constants.kPlateCenterOutsideRightSensorPin[0], Constants.kPlateCenterOutsideRightSensorPin[1]);
-        mTriggerInsideLeft = new Ultrasonic(Constants.kPlateCenterInsideLeftSensorPin[0], Constants.kPlateCenterInsideLeftSensorPin[1]);
-        mTriggerInsideRight = new Ultrasonic(Constants.kPlateCenterInsideRightSensorPin[0], Constants.kPlateCenterInsideRightSensorPin[1]);
 
-*/
-        //compressor = new Compressor();
+        compressor = new Compressor();
+        System.out.println("Plate initialized");
     }
 
     public enum SystemState {
@@ -104,7 +101,7 @@ public class PlateCenter extends Subsystem {
         @Override
         public void onStart(double timestamp) {
             stop();
-            //compressor.start();
+            compressor.start();
             synchronized (PlateCenter.this) {
                 System.out.println("Plate onStart");
                 mSystemState = SystemState.IDLE;
@@ -146,6 +143,7 @@ public class PlateCenter extends Subsystem {
                 }
                 positionUpdater();
             }
+          //  System.out.println("Plate Loop");
         }
 
         @Override
@@ -156,7 +154,10 @@ public class PlateCenter extends Subsystem {
 
 
     private SystemState defaultIdleTest(){
-        if(mSystemState == mWantedState) return SystemState.IDLE;
+        if(mSystemState == mWantedState){
+            mWantedState=SystemState.IDLE;
+            return SystemState.IDLE; 
+        }
         else return mWantedState;
     }
 
@@ -174,7 +175,7 @@ public class PlateCenter extends Subsystem {
         if(mStateChanged){
             
             hasHomed=false;
-            mBeltTalon.set(ControlMode.PercentOutput,-.2);
+            mBeltTalon.set(ControlMode.PercentOutput,-.7);
             mBeltTalon.setSelectedSensorPosition(-1);
         }
 
@@ -186,6 +187,7 @@ public class PlateCenter extends Subsystem {
 
 
         if(hasHomed){
+            setPosition(Constants.kPlateCenterTalonSoftLimit/2);
             if(atPosition()){
             return defaultIdleTest();
             }else{
@@ -244,24 +246,29 @@ public class PlateCenter extends Subsystem {
         if (mStateChanged) {
            stopMotor();
            System.out.println("Deploying Plate");    
-            suck(true);
+            //suck(true);
         }
 
         double elapsedTime = now - startStartedAt;
+        System.out.println(elapsedTime);
+        
         if (elapsedTime > Constants.kPlateCenterDeployPauses[0]&&
         elapsedTime<= Constants.kPlateCenterDeployPauses[1]) {
-            suck(true);
+            //suck(true);
             push(true);
+            System.out.println("Suck and Push 1");
         } else if(elapsedTime > Constants.kPlateCenterDeployPauses[1]&&
         elapsedTime<= Constants.kPlateCenterDeployPauses[2]) {
             suck(false);
             push(true);
+            System.out.println("unsuck 2");
         }else if(elapsedTime > Constants.kPlateCenterDeployPauses[2]&&
         elapsedTime<= Constants.kPlateCenterDeployPauses[3]) {
+            System.out.println("unpush 3");
             suck(false);
             push(false);
-        }else{
-           return defaultIdleTest(); //TODO: Calibrate times in constants
+        }else if(elapsedTime>=Constants.kPlateCenterDeployPauses[3]){
+           return defaultIdleTest(); 
         }
         
         return SystemState.DEPLOYINGPLATE;
@@ -308,7 +315,10 @@ public class PlateCenter extends Subsystem {
         private double mTravelingSetPosition=0;
 
         public synchronized void setPosition(double pos){
+            if(pos>=Constants.kPlateCenterTalonSoftLimit)pos=Constants.kPlateCenterTalonSoftLimit;
+            else if(pos<0)pos=0;
             mWantedSetPosition=pos;
+            
            // System.out.println("Set wanted pos to "+pos);
         }
 
@@ -317,11 +327,11 @@ public class PlateCenter extends Subsystem {
         }
 
         public double getPosition(){
-            return mBeltTalon.getSelectedSensorPosition()/Constants.kPlateCenterTalonSoftLimit;
+            return mBeltTalon.getSelectedSensorPosition()/Constants.kPlateCenterTicksPerInch;
         }
 
         public boolean atPosition(){
-           if(Math.abs(mBeltTalon.getClosedLoopTarget()-mBeltTalon.getSelectedSensorPosition())<=Constants.kPlateCenterTalonTolerance){
+           if(Math.abs(mWantedSetPosition-getPosition())<=Constants.kPlateCenterTalonTolerance){
                return true;
            }else{
                return false;
@@ -333,22 +343,23 @@ public class PlateCenter extends Subsystem {
             if(hasHomed&&mWantedSetPosition!=mTravelingSetPosition){
 
                 mTravelingSetPosition=mWantedSetPosition;
-                System.out.println("set position: "+mTravelingSetPosition);
+                //System.out.println("set position: "+mTravelingSetPosition);
                 mBeltTalon.set(ControlMode.Position, mTravelingSetPosition*Constants.kPlateCenterTicksPerInch);
             }
         }
 
     //Pneumatic Controls
         private void suck(boolean s){
-           //mSuckSolenoid.set(s);
+           mSuckSolenoid.set(s);
            System.out.println("Suck solenoid: "+s);
         }
         private void push(boolean p){
-          // mDeploySolenoid.set(p);
+            if(p) mDeploySolenoid.set(DoubleSolenoid.Value.kForward);
+            else mDeploySolenoid.set(DoubleSolenoid.Value.kReverse);
           System.out.println("Push solenoid: "+p);
         }
         private void hardStop(boolean h){
-         // mHardStopYeeYeeSolenoid.set(h);
+          mHardStopYeeYeeSolenoid.set(h);
          System.out.println("HardStop solenoid: "+h);
         }
         private void resetPistons(){
@@ -380,7 +391,7 @@ public class PlateCenter extends Subsystem {
 
         @Override
         public void stop() {
-           // compressor.stop();
+            compressor.stop();
             setWantedState(SystemState.IDLE);
         }
 
@@ -390,8 +401,8 @@ public class PlateCenter extends Subsystem {
         }
 
         @Override
-        public void registerEnabledLoops(Looper enabledLooper) {
-
+        public void registerEnabledLoops(Looper in) {
+            in.register(mLoop);
         }
 
 }

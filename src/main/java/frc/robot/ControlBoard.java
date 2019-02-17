@@ -167,7 +167,7 @@ public class ControlBoard implements ControlBoardInterface {
 		}else {
 			speed=0;
 		}
-		speed*=.05;
+		speed*=.1;
         return speed;
     }
 

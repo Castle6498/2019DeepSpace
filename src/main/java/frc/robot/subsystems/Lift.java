@@ -110,7 +110,10 @@ public class Lift extends Subsystem {
 
 
     private ControlState defaultIdleTest(){
-        if(mControlState == mWantedState) return ControlState.IDLE;
+        if(mControlState == mWantedState){
+            mWantedState=ControlState.IDLE;
+            return ControlState.IDLE; 
+        }
         else return mWantedState;
     }
 
