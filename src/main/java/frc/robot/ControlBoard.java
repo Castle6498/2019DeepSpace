@@ -213,7 +213,7 @@ public class ControlBoard implements ControlBoardInterface {
             speed=0;
         }
 
-		speed*=.05;
+		speed*=.1;
         return speed;
     }
 
@@ -224,7 +224,7 @@ public class ControlBoard implements ControlBoardInterface {
             speed=0;
         }
 
-		speed*=.05;
+		speed*=.5;
         return speed;
     }
 

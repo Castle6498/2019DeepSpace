@@ -34,6 +34,7 @@ public class Intake extends Subsystem {
         
         //Talon Initialization 
         mTalon = new Talon(Constants.kIntakeTalonChannel);
+        mTalon.setInverted(true);
         
        //Photoeye Initialization
        mPhotoeye=new DigitalInput(Constants.kIntakeSensorPort);
@@ -100,7 +101,10 @@ public class Intake extends Subsystem {
 
 
     private SystemState defaultIdleTest(){
-        if(mSystemState == mWantedState) return SystemState.IDLE;
+        if(mSystemState == mWantedState){
+            mWantedState=SystemState.IDLE;
+            return SystemState.IDLE; 
+        }
         else return mWantedState;
     }
 

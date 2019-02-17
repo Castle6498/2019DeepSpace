@@ -38,7 +38,7 @@ public class Lift extends Subsystem {
         
         //Talon Initialization 
         mTalon = CANTalonFactory.createTalon(Constants.kLiftTalonID, 
-        false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+        true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
 
         mTalon = CANTalonFactory.setupHardLimits(mTalon, LimitSwitchSource.Deactivated,
         LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,true);
@@ -55,7 +55,6 @@ public class Lift extends Subsystem {
     public enum ControlState {
         IDLE,
         HOMING,
-        CLOSEDLOOP,
     }
 
     private ControlState mControlState = ControlState.IDLE;
@@ -85,9 +84,7 @@ public class Lift extends Subsystem {
                     break;
                 case HOMING:
                     newState = handleHoming();
-                    break;  
-                case CLOSEDLOOP:
-                    newState = handleClosedLoop();     
+                    break;   
                 default:
                     newState = ControlState.IDLE;
                 }
@@ -99,6 +96,7 @@ public class Lift extends Subsystem {
                 } else {
                     mStateChanged = false;
                 }
+                positionUpdater();
             }
         }
 
@@ -138,12 +136,14 @@ public class Lift extends Subsystem {
         if(!hasHomed&&mTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
             System.out.println("home done");
-            mSetPosition(0);
+            setPosition(0);
         }
 
 
         if(hasHomed){
+            setPosition(0);
             if(atPosition()){
+                System.out.println("Home at position");
             return defaultIdleTest();
             }else{
                 return mWantedState;
@@ -153,48 +153,48 @@ public class Lift extends Subsystem {
         }
     }
 
-    private double mWantedPosition = 0;
-    private double mTravelingPosition = 0;
-
-    private ControlState handleClosedLoop(){
-            if(mTravelingPosition!=mWantedPosition){//To keep from spamming talon
-                mSetPosition(mWantedPosition);
-                mTravelingPosition = mWantedPosition;
-            }   
-       return mWantedState;
-    }
+   
     
 
     //CLOSED LOOP CONTROL
+    private double mWantedPosition = .1;
+    private double mTravelingPosition = 0;
     
-    public synchronized void setClosedLoop(double set){
-        if(mWantedState!=mControlState){
-            setWantedState(ControlState.CLOSEDLOOP);
-        }
-        mWantedPosition=set;
+    public synchronized void setPosition(double pos){
+        if(pos>=Constants.kLiftSoftLimit)pos=Constants.kLiftSoftLimit;
+        else if(pos<0)pos=0;
+        mWantedPosition=pos;
+        
+       // System.out.println("Set wanted pos to "+pos);
     }
-    public synchronized void jog(double displacement){
-        setClosedLoop(displacement+mWantedPosition);
+
+    public void jog(double amount){
+        setPosition(mWantedPosition+=amount);
     }
-     
-   private synchronized void mSetPosition(double set){
-       if(hasHomed){
-       mTalon.set(ControlMode.Position, set*Constants.kLiftTicksPerInch);
-       }else{
-           System.out.println("Lift tried position without homing");
-       }
-   }
 
 
    public boolean atPosition(){
-       //TODO: test getclosedlooptarget
-      if(Math.abs(mTalon.getClosedLoopTarget()-mTalon.getSelectedSensorPosition())<=Constants.kLiftTolerance){
+      if(Math.abs(mWantedPosition-getPosition())<=Constants.kLiftTolerance){
           return true;
       }else{
           return false;
       }
        
    }
+
+   public double getPosition(){
+       return mTalon.getSelectedSensorPosition()/Constants.kLiftTicksPerInch;
+   }
+
+   private void positionUpdater(){
+           
+    if(hasHomed&&mWantedPosition!=mTravelingPosition){
+
+        mTravelingPosition=mWantedPosition;
+        System.out.println("set position: "+mTravelingPosition);
+        mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kLiftTicksPerInch);
+    }
+}
   
    private synchronized void stopMotor(){
         mTalon.set(ControlMode.Disabled,0);

@@ -142,12 +142,12 @@ public class BallControlHelper extends Subsystem {
             mCurrentPickUpHeight=mWantedPickUpHeight;
             switch(mCurrentPickUpHeight){
                 case FLOOR:
-                        mLift.setClosedLoop(Constants.kLiftPickUpFloor);
-                        mWrist.setClosedLoop(Constants.kWristPickUpFloor);
+                        mLift.setPosition(Constants.kLiftPickUpFloor);
+                        mWrist.setPosition(Constants.kWristPickUpFloor);
                     break;
                 case LOADING_STATION:
-                        mLift.setClosedLoop(Constants.kLiftPickUpLoadingStation);
-                        mWrist.setClosedLoop(Constants.kWristPickUpLoadingStation);
+                        mLift.setPosition(Constants.kLiftPickUpLoadingStation);
+                        mWrist.setPosition(Constants.kWristPickUpLoadingStation);
                 break;
             }
        }
@@ -169,20 +169,20 @@ public class BallControlHelper extends Subsystem {
             mCurrentShootHeight=mWantedShootHeight;
             switch(mCurrentShootHeight){
                 case CARGO_SHIP:
-                    mLift.setClosedLoop(Constants.kLiftShootCargoShip);
-                    mWrist.setClosedLoop(Constants.kWristShootCargoShip);
+                    mLift.setPosition(Constants.kLiftShootCargoShip);
+                    mWrist.setPosition(Constants.kWristShootCargoShip);
                 break;
                 case ROCKET_ONE:
-                    mLift.setClosedLoop(Constants.kLiftShootRocketOne);
-                    mWrist.setClosedLoop(Constants.kWristShootRocketOne);
+                    mLift.setPosition(Constants.kLiftShootRocketOne);
+                    mWrist.setPosition(Constants.kWristShootRocketOne);
                 break;
                 case ROCKET_TWO:
-                    mLift.setClosedLoop(Constants.kLiftShootRocketTwo);
-                    mWrist.setClosedLoop(Constants.kWristShootRocketTwo);
+                    mLift.setPosition(Constants.kLiftShootRocketTwo);
+                    mWrist.setPosition(Constants.kWristShootRocketTwo);
                 break;
                 case ROCKET_THREE:
-                    mLift.setClosedLoop(Constants.kLiftShootRocketThree);
-                    mWrist.setClosedLoop(Constants.kWristShootRocketThree);
+                    mLift.setPosition(Constants.kLiftShootRocketThree);
+                    mWrist.setPosition(Constants.kWristShootRocketThree);
                 break;
             }
         }
@@ -203,12 +203,12 @@ public class BallControlHelper extends Subsystem {
             mCurrentCarryHeight=mWantedCarryHeight;
             switch(mCurrentCarryHeight){
                 case LOW:
-                    mLift.setClosedLoop(Constants.kLiftCarryLow);
-                    mWrist.setClosedLoop(Constants.kWristCarryLow);
+                    mLift.setPosition(Constants.kLiftCarryLow);
+                    mWrist.setPosition(Constants.kWristCarryLow);
                 break;
                 case MIDDLE:
-                    mLift.setClosedLoop(Constants.kLiftCarryMiddle);
-                    mWrist.setClosedLoop(Constants.kWristCarryMiddle);
+                    mLift.setPosition(Constants.kLiftCarryMiddle);
+                    mWrist.setPosition(Constants.kWristCarryMiddle);
                 break;
             }
         }
@@ -235,7 +235,7 @@ public class BallControlHelper extends Subsystem {
     private SystemState handleHome() {
        if(mStateChanged){
            mLift.setWantedState(Lift.ControlState.HOMING);
-           mWrist.setWantedState(Wrist.ControlState.HOMING);
+          // mWrist.setWantedState(Wrist.ControlState.HOMING);
        }
 
         return mWantedState;

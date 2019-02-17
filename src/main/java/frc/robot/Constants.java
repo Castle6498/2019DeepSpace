@@ -92,8 +92,8 @@ public class Constants extends ConstantsBase {
         public static final double kIntakePickUpSpeed=.5;
         public static final double kIntakeShootSpeed=-.5;
 
-        public static final double kIntakePickUpPause = 2; //TODO - tune intake pause
-        public static final double kIntakeShootPause = 2; //TODO - tune shoot pause
+        public static final double kIntakePickUpPause = 1; //TODO - tune intake pause
+        public static final double kIntakeShootPause = 1; //TODO - tune shoot pause
 
         //Photoeye
         public static final int kIntakeSensorPort = 0;
@@ -102,29 +102,31 @@ public class Constants extends ConstantsBase {
     
         //Talon
         public static final int kWristTalonID=8;
-        public static final int kWristChildTalonID=0; //TODO:IDK WHAT THIS IS
-        public static final double kWristTalonP=1;
+        public static final int kWristChildTalonID=0; 
+
+        public static final double kWristTalonP=9;
         public static final double kWristTalonI=0;
         public static final double kWristTalonD=0;
         public static final double kWristTalonF=0;
 
-        public static final double kWristTicksPerDeg=1024/360; //TODO: get wheel diam
-        public static final double kWristSoftLimit=110; //TODO: GET this, IMPORTANT
-        public static final double kWristTolerance = 5;
+        public static final double kWristTicksPerDeg=1024/360; 
+        public static final double kWristSoftLimit=160; 
+        public static final double kWristTolerance = .5;
 
     //Lift -----------------------------------------------------------
     
         //Talon
         public static final int kLiftTalonID=10;
+
         public static final double kLiftTalonP=1;
         public static final double kLiftTalonI=0;
         public static final double kLiftTalonD=0;
         public static final double kLiftTalonF=0;
 
-        public static final double kLiftTicksPerInch=4096 /(1.4*Math.PI); //TODO: get wheel diam
-        public static final double kLiftSoftLimit=28; //TODO: GET this, IMPORTANT
+        public static final double kLiftTicksPerInch=4096 /(1.4*Math.PI); 
+        public static final double kLiftSoftLimit=28; 
 
-        public static final double kLiftTolerance = 5;
+        public static final double kLiftTolerance = 1;
 
     //Suspension -----------------------------------------------------------
         
@@ -158,13 +160,13 @@ public class Constants extends ConstantsBase {
     
         //Talon
         public static final int kPlateCenterTalonID=7;
-            public static final double kPlateCenterTalonP=20;
+            public static final double kPlateCenterTalonP=.5;
             public static final double kPlateCenterTalonI=0;
             public static final double kPlateCenterTalonD=0;
             public static final double kPlateCenterTalonF=0;
 
-            public static final double kPlateCenterTicksPerInch=1680 / (2.24*Math.PI); //TODO: get wheel diam
-            public static final double kPlateCenterTalonSoftLimit=15; //TODO: GET this, IMPORTANT
+            public static final double kPlateCenterTicksPerInch=1680 / (2.24*Math.PI); 
+            public static final double kPlateCenterTalonSoftLimit=15; 
             public static final double kPlateCenterTalonTolerance = 1;
 
         //Pneumatics

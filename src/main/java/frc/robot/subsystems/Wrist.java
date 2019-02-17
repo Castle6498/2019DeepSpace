@@ -32,31 +32,38 @@ public class Wrist extends Subsystem {
         return sInstance;
     }
 
-    private TalonSRX mTalon;
+    private TalonSRX mTalon, mTalonChild;
    
     public Wrist() {
         
         //Talon Initialization 
         mTalon = CANTalonFactory.createTalon(Constants.kWristTalonID, 
-        false, NeutralMode.Brake, FeedbackDevice.Analog, 0, false);
+        false, NeutralMode.Brake, FeedbackDevice.Analog, 0, true);
 
-        mTalon = CANTalonFactory.setupHardLimits(mTalon, LimitSwitchSource.Deactivated,
-        LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,true);
+
+        mTalon = CANTalonFactory.setupHardLimits(mTalon,  LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,true,
+        LimitSwitchSource.Deactivated,LimitSwitchNormal.Disabled, false);
         
-        mTalon = CANTalonFactory.setupSoftLimits(mTalon, true, (int) Math.round(Constants.kWristSoftLimit*Constants.kWristTicksPerDeg),
-        false, 0);
+        mTalon = CANTalonFactory.setupSoftLimits(mTalon, false, 0,true, -(int) Math.round(Constants.kWristSoftLimit*Constants.kWristTicksPerDeg));
         
+
+
         mTalon = CANTalonFactory.tuneLoops(mTalon, 0, Constants.kWristTalonP,
         Constants.kWristTalonI, Constants.kWristTalonD, Constants.kWristTalonF);
-		
+
+        
+        mTalonChild = new TalonSRX(Constants.kWristChildTalonID);
+        mTalonChild.setNeutralMode(NeutralMode.Brake);
+        mTalonChild.setInverted(true);
+        mTalonChild.follow(mTalon);
+        
         
        
     }
 
     public enum ControlState {
         IDLE,
-        HOMING,
-        CLOSEDLOOP,
+        HOMING
     }
 
     private ControlState mControlState = ControlState.IDLE;
@@ -86,9 +93,7 @@ public class Wrist extends Subsystem {
                         break;
                     case HOMING:
                         newState = handleHoming();
-                        break;  
-                    case CLOSEDLOOP:
-                        newState = handleClosedLoop();     
+                        break;   
                     default:
                         newState = ControlState.IDLE;
                     }
@@ -100,6 +105,7 @@ public class Wrist extends Subsystem {
                 } else {
                     mStateChanged = false;
                 }
+                positionUpdater();
             }
         }
 
@@ -110,7 +116,10 @@ public class Wrist extends Subsystem {
     };
 
     private ControlState defaultIdleTest(){
-        if(mControlState == mWantedState) return ControlState.IDLE;
+        if(mControlState == mWantedState){
+            mWantedState=ControlState.IDLE;
+            return ControlState.IDLE; 
+        }
         else return mWantedState;
     }
 
@@ -128,18 +137,19 @@ public class Wrist extends Subsystem {
         if(mStateChanged){
             
             hasHomed=false;
-            mTalon.set(ControlMode.PercentOutput,-.2);
-            mTalon.setSelectedSensorPosition(-1);
+            mTalon.set(ControlMode.PercentOutput,.2);
+            mTalon.setSelectedSensorPosition(1);
         }
 
         if(!hasHomed&&mTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
             System.out.println("home done");
-            mSetPosition(0);
+            setPosition(0);
         }
 
 
         if(hasHomed){
+            setPosition(0);
             if(atPosition()){
             return defaultIdleTest();
             }else{
@@ -150,50 +160,47 @@ public class Wrist extends Subsystem {
         }
     }
 
-  
-    private double mWantedPosition = 0;
-    private double mTravelingPosition = 0;
 
-    private ControlState handleClosedLoop(){
-        if(mTravelingPosition!=mWantedPosition){//To keep from spamming talon
-            mSetPosition(mWantedPosition);
-            mTravelingPosition = mWantedPosition;
-        }   
-        return mWantedState;
-    }
+//CLOSED LOOP CONTROL
+private double mWantedPosition = -.01;
+private double mTravelingPosition = 0;
 
-
-
-    //CLOSED LOOP CONTROL
+public synchronized void setPosition(double pos){
+    if(pos<=(-Constants.kWristSoftLimit))pos=-Constants.kWristSoftLimit;
+    else if(pos>0)pos=0;
+    mWantedPosition=pos;
     
-    public synchronized void setClosedLoop(double set){
-        if(mWantedState!=mControlState){
-            setWantedState(ControlState.CLOSEDLOOP);
-        }
-        mWantedPosition=set;
-    }
-    public synchronized void jog(double displacement){
-        setClosedLoop(displacement+mWantedPosition);
-    }
-     
-   private synchronized void mSetPosition(double set){
-       if(hasHomed){
-       mTalon.set(ControlMode.Position, set*Constants.kWristTicksPerDeg);
-       }else{
-           System.out.println("Wrist tried position without homing");
-       }
-   }
+   // System.out.println("Set wanted pos to "+pos);
+}
+
+public void jog(double amount){
+    setPosition(mWantedPosition+=amount);
+}
 
 
-   public boolean atPosition(){
-       //TODO: test getclosedlooptarget
-      if(Math.abs(mTalon.getClosedLoopTarget()-mTalon.getSelectedSensorPosition())<=Constants.kWristTolerance){
-          return true;
-      }else{
-          return false;
-      }
+public boolean atPosition(){
+  if(Math.abs(mWantedPosition-getPosition())<=Constants.kWristTolerance){
+      return true;
+  }else{
+      return false;
+  }
+   
+}
+
+public double getPosition(){
+   return mTalon.getSelectedSensorPosition()/Constants.kWristTicksPerDeg;
+}
+
+private void positionUpdater(){
        
-   }
+if(hasHomed&&mWantedPosition!=mTravelingPosition){
+
+    mTravelingPosition=mWantedPosition;
+    System.out.println("set position: "+mTravelingPosition+ " Position now: "+getPosition());
+    mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kWristTicksPerDeg);
+    
+}
+}
   
    private synchronized void stopMotor(){
         mTalon.set(ControlMode.Disabled,0);
