@@ -87,7 +87,7 @@ public class BallControlHelper extends Subsystem {
                     newState = handleShootBallPosition();
                     break;
                 case SHOOT:
-                    newState = handleShoot();
+                    newState = handleShoot(timestamp);
                     break;
                 case CARRYBALL:
                     newState = handleCarryBall();
@@ -117,12 +117,20 @@ public class BallControlHelper extends Subsystem {
         }
     };
 
+    private SystemState defaultIdleTest(){
+        if(mSystemState == mWantedState){
+            mWantedState=SystemState.IDLE;
+            return SystemState.IDLE; 
+        }
+        else return mWantedState;
+    }
+
     private SystemState handleIdle() {
         if (mStateChanged) {
             stop();
         }
 
-        return mWantedState;
+        return defaultIdleTest();
     }
 
 
@@ -131,7 +139,6 @@ public class BallControlHelper extends Subsystem {
 
     private PickUpHeight mWantedPickUpHeight = PickUpHeight.FLOOR;
     private PickUpHeight mCurrentPickUpHeight = PickUpHeight.FLOOR;
-    private boolean carryAfterPickUp=true;
 
     private SystemState handlePickUpBall() {
        if(mStateChanged){
@@ -142,6 +149,7 @@ public class BallControlHelper extends Subsystem {
             mCurrentPickUpHeight=mWantedPickUpHeight;
             switch(mCurrentPickUpHeight){
                 case FLOOR:
+                    System.out.println("Ball lift and wrist pick up floor");
                         mLift.setPosition(Constants.kLiftPickUpFloor);
                         mWrist.setPosition(Constants.kWristPickUpFloor);
                     break;
@@ -152,7 +160,13 @@ public class BallControlHelper extends Subsystem {
             }
        }
 
-       if(mIntake.hasBall()&&carryAfterPickUp)return SystemState.CARRYBALL;
+       if(mIntake.hasBall()){
+           if(Constants.kCarryAfterPickUp){
+               mWantedState=SystemState.CARRYBALL;
+                return SystemState.CARRYBALL;
+           }
+           else return defaultIdleTest();
+       }
        else return mWantedState;
     }
     
@@ -218,15 +232,20 @@ public class BallControlHelper extends Subsystem {
     }
 
 
-    boolean carryAfterShoot=true;
+    private double startedAt=0;
 
-    private SystemState handleShoot() {
+    private SystemState handleShoot(double time) {
        if(mStateChanged){
            mIntake.setWantedState(Intake.SystemState.SHOOTING);
+           startedAt=time;
        }
 
-       if(!mIntake.seesBall()&& mCurrentStateStartTime>=Constants.kCarryPauseAfterShoot){
-           return SystemState.CARRYBALL;
+       if(!mIntake.hasBall()&& time-startedAt>=Constants.kCarryPauseAfterShoot){
+           if(Constants.kCarryAfterShoot){
+            mWantedState=SystemState.CARRYBALL;
+                return SystemState.CARRYBALL;
+           }
+           else return defaultIdleTest();
        }else return mWantedState;
 
     }
@@ -235,7 +254,7 @@ public class BallControlHelper extends Subsystem {
     private SystemState handleHome() {
        if(mStateChanged){
            mLift.setWantedState(Lift.ControlState.HOMING);
-          // mWrist.setWantedState(Wrist.ControlState.HOMING);
+           mWrist.setWantedState(Wrist.ControlState.HOMING);
        }
 
         return mWantedState;

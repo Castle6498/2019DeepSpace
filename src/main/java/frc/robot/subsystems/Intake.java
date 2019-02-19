@@ -115,17 +115,12 @@ public class Intake extends Subsystem {
         return defaultIdleTest();
     }
 
-    private double pickUpStartTime=0;
     private SystemState handlePickingUp(double now){
         if(mStateChanged){
             mTalon.set(Constants.kIntakePickUpSpeed);
         }
 
-        if(seesBall()&&pickUpStartTime==0){
-            pickUpStartTime=now;
-        }
-
-        if(pickUpStartTime-now>=Constants.kIntakePickUpPause){
+        if(hasBall()){
             stopMotor();
             return defaultIdleTest();
         }
@@ -140,13 +135,14 @@ public class Intake extends Subsystem {
     private SystemState handleShooting(double now){
         if(mStateChanged){
             mTalon.set(Constants.kIntakeShootSpeed);
+            shootStartTime=0;
         }
 
-        if(seesBall()&&shootStartTime==0){
+        if(hasBall()&&shootStartTime==0){
             shootStartTime=now;
         }
 
-        if(shootStartTime-now>=Constants.kIntakeShootPause){
+        if(now-shootStartTime>=Constants.kIntakeShootPause){
             stopMotor();
             return defaultIdleTest();
         }
@@ -168,7 +164,6 @@ public class Intake extends Subsystem {
 
     private double ballStartSeenTime=0;
     private double ballSeenTime=0;
-    private double ballRequiredTime=10; //TODO tune this
 
     private void ballUpdate(double time){
         boolean seen = seesBall();
@@ -181,7 +176,7 @@ public class Intake extends Subsystem {
             ballSeenTime=time;
         } 
 
-        if(ballSeenTime-ballStartSeenTime>=ballRequiredTime){
+        if(ballSeenTime-ballStartSeenTime>=Constants.kIntakeBallRequiredTime){
             mHasBall=true;
         }
     }

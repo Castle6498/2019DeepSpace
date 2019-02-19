@@ -176,7 +176,7 @@ public class PlateCenter extends Subsystem {
             
             hasHomed=false;
             mBeltTalon.set(ControlMode.PercentOutput,-.7);
-            mBeltTalon.setSelectedSensorPosition(-1);
+            mBeltTalon.setSelectedSensorPosition(-500);
         }
 
         if(!hasHomed&&mBeltTalon.getSelectedSensorPosition()==0){
@@ -221,15 +221,15 @@ public class PlateCenter extends Subsystem {
                 centeringState=CenteringState.SENSE;
             }
             case SENSE:
-                leftRange = mLidarOne.get();      
-                rightRange = mLidarTwo.get();
-                if(leftRange && rightRange){
+                //leftRange = mLidarOne.get();      
+                //rightRange = mLidarTwo.get();
+                if(getRightLidar()){
                     stopMotor();
                     inchesToCenter = getPosition() - slideMiddlePoint; //center point
                     System.out.println("centered succesfully");
                     centeringState = CenteringState.DONE;
                     plateCentered=true;
-                }else if(getPosition()>=Constants.kPlateCenterTalonSoftLimit/Constants.kPlateCenterTicksPerInch) {
+                }else if(getPosition()>=Constants.kPlateCenterTalonSoftLimit) {
                     System.out.println("center failed");
                     centeringState = CenteringState.DONE;
                     plateCentered=false;
@@ -346,6 +346,14 @@ public class PlateCenter extends Subsystem {
                 //System.out.println("set position: "+mTravelingSetPosition);
                 mBeltTalon.set(ControlMode.Position, mTravelingSetPosition*Constants.kPlateCenterTicksPerInch);
             }
+        }
+
+    //Sensors
+        public boolean getLeftLidar(){
+            return mLidarOne.get();
+        }
+        public boolean getRightLidar(){
+            return mLidarTwo.get();
         }
 
     //Pneumatic Controls

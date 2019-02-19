@@ -139,10 +139,14 @@ public class ControlBoard implements ControlBoardInterface {
       }
 
     
-
+boolean gear=false;
     @Override
     public boolean getLowGear() {
-        return false;
+        if(mDriver.getBumper(Hand.kRight)){
+            gear=false;
+        }else if(mDriver.getBumper(Hand.kLeft))gear=true;
+
+        return gear;
     }
 
     @Override
@@ -214,7 +218,7 @@ public class ControlBoard implements ControlBoardInterface {
         }
 
 		speed*=.1;
-        return speed;
+        return -speed;
     }
 
     @Override
@@ -224,7 +228,7 @@ public class ControlBoard implements ControlBoardInterface {
             speed=0;
         }
 
-		speed*=.5;
+		speed*=.75;
         return speed;
     }
 

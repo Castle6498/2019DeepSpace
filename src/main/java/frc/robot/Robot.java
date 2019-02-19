@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -35,11 +36,9 @@ import java.util.Map;
 public class Robot extends TimedRobot {
 
     // Get subsystem instances
-    //private Drive mDrive = Drive.getInstance();
-    //private PlateCenter mPlate = PlateCenter.getInstance();
-    //private BallControlHelper mBall = BallControlHelper.getInstance();
-    private Wrist mWrist =Wrist.getInstance();
-    private Intake mIntake = Intake.getInstance();
+    private Drive mDrive = Drive.getInstance();
+    private PlateCenter mPlate = PlateCenter.getInstance();
+    private BallControlHelper mBall = BallControlHelper.getInstance();
     //private Superstructure mSuperstructure = Superstructure.getInstance();
     
     private AutoModeExecuter mAutoModeExecuter = null;
@@ -49,14 +48,15 @@ public class Robot extends TimedRobot {
             Arrays.asList(mDrive, Intake.getInstance(),Wrist.getInstance(),
            mPlate,Wrist.getInstance(),mBall));*/
 
-    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mWrist,mIntake));
+    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mDrive,mPlate,mBall,
+    Intake.getInstance(),Lift.getInstance(),Wrist.getInstance()));
 
     // Initialize other helper objects
     private ControlBoardInterface mControlBoard = ControlBoard.getInstance();
 
     private Looper mEnabledLooper = new Looper();
 
-  // private CameraVision cameraVision=new CameraVision();
+   private CameraVision cameraVision=new CameraVision();
 
   
     public Robot() {
@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
 
     public void zeroAllSensors() {
         mSubsystemManager.zeroSensors();
-      //  mDrive.zeroSensors();
+       mDrive.zeroSensors();
     }
 
     /**
@@ -144,11 +144,10 @@ public class Robot extends TimedRobot {
 
             // Start loopers
             mEnabledLooper.start();
-            //mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            //mBall.setWantedState(BallControlHelper.SystemState.IDLE);
-            //mPlate.setWantedState(PlateCenter.SystemState.IDLE);
-            mWrist.setWantedState(Wrist.ControlState.IDLE);
-            mIntake.setWantedState(Intake.SystemState.IDLE);
+            mDrive.setOpenLoop(DriveSignal.NEUTRAL);
+            mBall.setWantedState(BallControlHelper.SystemState.HOME);
+            mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+        
 
            zeroAllSensors();
            
@@ -174,37 +173,30 @@ public class Robot extends TimedRobot {
             //double timestamp = Timer.getFPGATimestamp();
            
 
-        //mDrive.setOpenLoop(mControlBoard.getDriveSignal());
+        mDrive.setOpenLoop(mControlBoard.getDriveSignal());
           
-      /*  if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
+       if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
         else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
         else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
-        else if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);*/
+        if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
        
             
-       // mPlate.jog(mControlBoard.getHatchPanelJog());
+       mPlate.jog(mControlBoard.getHatchPanelJog());
 
-      /*  if(mControlBoard.getBallPickUp()) mBall.pickUp(BallControlHelper.PickUpHeight.FLOOR);
+        if(mControlBoard.getBallPickUp()) mBall.pickUp(BallControlHelper.PickUpHeight.FLOOR);
         else if(mControlBoard.getBallShootPosition())mBall.shootPosition(BallControlHelper.ShootHeight.CARGO_SHIP);
         else if(mControlBoard.getBallShoot()) mBall.setWantedState(BallControlHelper.SystemState.SHOOT);
-        else if(mControlBoard.getBallHome()) mBall.setWantedState(BallControlHelper.SystemState.HOME);
-          */
+         if(mControlBoard.getBallHome()) mBall.setWantedState(BallControlHelper.SystemState.HOME);
         
-        
-        if(mControlBoard.getBallHome()){
-
-        // mBall.setWantedState(SystemState.HOME);
-        mWrist.setWantedState(Wrist.ControlState.HOMING);
-            System.out.println("try to home ball");
-        }
-        mWrist.jog(mControlBoard.getWristJog());
-       // mBall.jogWrist(mControlBoard.getWristJog());    
+        mBall.jogLift(mControlBoard.getLiftJog());    
      
-        //mBall.jogWrist(mControlBoard.getWristJog());         
+        mBall.jogWrist(mControlBoard.getWristJog());         
             
+        
+        mDrive.lowGear(mControlBoard.getLowGear());
+        
        // System.out.println(cameraVision.getX());
-        //if(mControlBoard.getHatchPanelDeploy())mIntake.setWantedState(Intake.SystemState.PICKINGUP);
-           System.out.println(mIntake.seesBall());
+          //System.out.println("Left: "+mPlate.getLeftLidar()+" Right: "+mPlate.getRightLidar());
 
            allPeriodic();
         } catch (Throwable t) {
@@ -228,9 +220,8 @@ public class Robot extends TimedRobot {
             // Call stop on all our Subsystems.
             mSubsystemManager.stop();
 
-           // mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            mWrist.stop();
-            mIntake.stop();
+           mDrive.setOpenLoop(DriveSignal.NEUTRAL);
+           
            
 
             // If are tuning, dump map so far.

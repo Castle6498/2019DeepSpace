@@ -127,7 +127,7 @@ public class Lift extends Subsystem {
 
     private ControlState handleHoming(){
         if(mStateChanged){
-            
+            System.out.println("Lift set home false");
             hasHomed=false;
             mTalon.set(ControlMode.PercentOutput,-.2);
             mTalon.setSelectedSensorPosition(-1);
@@ -167,9 +167,10 @@ public class Lift extends Subsystem {
         
        // System.out.println("Set wanted pos to "+pos);
     }
-
+private boolean jog=false;
     public void jog(double amount){
         setPosition(mWantedPosition+=amount);
+        jog=true;
     }
 
 
@@ -191,7 +192,8 @@ public class Lift extends Subsystem {
     if(hasHomed&&mWantedPosition!=mTravelingPosition){
 
         mTravelingPosition=mWantedPosition;
-        System.out.println("set position: "+mTravelingPosition);
+        if(!jog)System.out.println("Lift to "+mTravelingPosition);
+        jog=false;
         mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kLiftTicksPerInch);
     }
 }

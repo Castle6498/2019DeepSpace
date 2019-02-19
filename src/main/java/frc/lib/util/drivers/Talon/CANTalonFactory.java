@@ -72,6 +72,7 @@ public class CANTalonFactory {
         talon.config_kI(id, I);
         talon.config_kD(id, D);
         talon.config_kF(id, F);
+        
 
         return talon;
     }

@@ -51,6 +51,8 @@ public class Wrist extends Subsystem {
         mTalon = CANTalonFactory.tuneLoops(mTalon, 0, Constants.kWristTalonP,
         Constants.kWristTalonI, Constants.kWristTalonD, Constants.kWristTalonF);
 
+        setMaxOuput(Constants.kWristMaxOutput);
+
         
         mTalonChild = new TalonSRX(Constants.kWristChildTalonID);
         mTalonChild.setNeutralMode(NeutralMode.Brake);
@@ -59,6 +61,10 @@ public class Wrist extends Subsystem {
         
         
        
+    }
+
+    void setMaxOuput(double output){
+        mTalon.configClosedLoopPeakOutput(0, output);
     }
 
     public enum ControlState {
@@ -135,10 +141,10 @@ public class Wrist extends Subsystem {
 
     private ControlState handleHoming(){
         if(mStateChanged){
-            
+            System.out.println("wrist home set to false");
             hasHomed=false;
-            mTalon.set(ControlMode.PercentOutput,.2);
-            mTalon.setSelectedSensorPosition(1);
+            mTalon.set(ControlMode.PercentOutput,.4);
+            mTalon.setSelectedSensorPosition(5000);
         }
 
         if(!hasHomed&&mTalon.getSelectedSensorPosition()==0){
@@ -172,9 +178,10 @@ public synchronized void setPosition(double pos){
     
    // System.out.println("Set wanted pos to "+pos);
 }
-
+private boolean jog;
 public void jog(double amount){
     setPosition(mWantedPosition+=amount);
+    jog=true;
 }
 
 
@@ -196,9 +203,9 @@ private void positionUpdater(){
 if(hasHomed&&mWantedPosition!=mTravelingPosition){
 
     mTravelingPosition=mWantedPosition;
-    System.out.println("set position: "+mTravelingPosition+ " Position now: "+getPosition());
+    /*if(!jog)*/ System.out.println("Wrist to "+mTravelingPosition+ " Position now: "+getPosition());
     mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kWristTicksPerDeg);
-    
+    jog=false;
 }
 }
   

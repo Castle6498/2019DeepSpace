@@ -10,7 +10,7 @@ NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 NetworkTableEntry tx = table.getEntry("tx");
 NetworkTableEntry ty = table.getEntry("ty");
 NetworkTableEntry ta = table.getEntry("ta");
-
+NetworkTableEntry tv = table.getEntry("tv");
 //read values periodically
 public double getX(){
 	return table.getEntry("tx").getDouble(0.0);
@@ -22,6 +22,9 @@ public double getY(){
 
 public double getArea(){
 	return table.getEntry("ta").getDouble(0.0);
+}
+public boolean seesTarget(){
+	return table.getEntry("tv").getBoolean(false);
 }
 
 

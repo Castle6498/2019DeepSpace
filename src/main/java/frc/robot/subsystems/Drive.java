@@ -8,7 +8,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
-
+import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
@@ -43,7 +43,7 @@ public class Drive extends Subsystem {
 
     // Hardware
    // private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave;
-   // private final Solenoid mShifter;
+    private final Solenoid mShifter;
     
     private TalonSRX mLeftMaster, mRightMaster;
     private VictorSPX mLeftSlave, mRightSlave;
@@ -86,6 +86,8 @@ public class Drive extends Subsystem {
             mRightSlave = new VictorSPX(Constants.kDriveRightVictorID);
             mLeftSlave.setInverted(true);
             mRightSlave.follow(mRightMaster);
+
+            mShifter=new Solenoid(Constants.kDriverShifterPort);
         
        
         setOpenLoop(DriveSignal.NEUTRAL);
@@ -133,6 +135,9 @@ public class Drive extends Subsystem {
         in.register(mLoop);
     }
 
+    public void lowGear(boolean f){
+        mShifter.set(f);
+    }
     /**
      * Update open loop control
      */

@@ -51,16 +51,18 @@ public class Constants extends ConstantsBase {
         //Victor
         public static final int kDriveLeftVictorID=2;
         public static final int kDriveRightVictorID=1;
+
+        public static final int kDriverShifterPort=3;
     //Ball Control Helper TODO: Get all of these crazy things
         //PickUp
-            public static final double kLiftPickUpFloor = 10;
-            public static final double kWristPickUpFloor = 90;
+            public static final double kLiftPickUpFloor = 0;
+            public static final double kWristPickUpFloor = -140;
             public static final double kLiftPickUpLoadingStation = 5;
             public static final double kWristPickUpLoadingStation = 0;
-
+ 
         //Shoot Height
-            public static final double kLiftShootCargoShip = 20;
-            public static final double kWristShootCargoShip = 45;
+            public static final double kLiftShootCargoShip = 24;
+            public static final double kWristShootCargoShip = -25;
 
             public static final double kLiftShootRocketOne = 0;
             public static final double kWristShootRocketOne = 0;
@@ -79,7 +81,11 @@ public class Constants extends ConstantsBase {
             public static final double kWristCarryMiddle = 0;
 
         //Shoot
-            public static final double kCarryPauseAfterShoot=2;
+            public static final double kCarryPauseAfterShoot=1;
+
+        //Auto Features
+        public static final boolean kCarryAfterPickUp=true;
+        public static final boolean kCarryAfterShoot=true;
 
 
 
@@ -90,10 +96,10 @@ public class Constants extends ConstantsBase {
         public static final int kIntakeTalonChannel=0;
 
         public static final double kIntakePickUpSpeed=.5;
-        public static final double kIntakeShootSpeed=-.5;
+        public static final double kIntakeShootSpeed=-1;
 
-        public static final double kIntakePickUpPause = 1; //TODO - tune intake pause
-        public static final double kIntakeShootPause = 1; //TODO - tune shoot pause
+        public static final double kIntakeBallRequiredTime=.35;
+        public static final double kIntakeShootPause = 1; 
 
         //Photoeye
         public static final int kIntakeSensorPort = 0;
@@ -104,7 +110,7 @@ public class Constants extends ConstantsBase {
         public static final int kWristTalonID=8;
         public static final int kWristChildTalonID=0; 
 
-        public static final double kWristTalonP=9;
+        public static final double kWristTalonP=15;
         public static final double kWristTalonI=0;
         public static final double kWristTalonD=0;
         public static final double kWristTalonF=0;
@@ -112,6 +118,8 @@ public class Constants extends ConstantsBase {
         public static final double kWristTicksPerDeg=1024/360; 
         public static final double kWristSoftLimit=160; 
         public static final double kWristTolerance = .5;
+
+        public static final double kWristMaxOutput=.75;
 
     //Lift -----------------------------------------------------------
     
@@ -131,13 +139,13 @@ public class Constants extends ConstantsBase {
     //Suspension -----------------------------------------------------------
         
         //Talon
-        public static final int kSuspensionBackLiftTalonID=0;
+        public static final int kSuspensionBackLiftTalonID=4;
             public static final double kSuspensionBackLiftTalonP=20;
             public static final double kSuspensionBackLiftTalonI=0;
             public static final double kSuspensionBackLiftTalonD=0;
             public static final double kSuspensionBackLiftTalonF=0;
 
-        public static final int kSuspensionFrontLiftTalonID=0;
+        public static final int kSuspensionFrontLiftTalonID=5;
             public static final double kSuspensionFrontLiftTalonP=20;
             public static final double kSuspensionFrontLiftTalonI=0;
             public static final double kSuspensionFrontLiftTalonD=0;
@@ -147,7 +155,7 @@ public class Constants extends ConstantsBase {
         public static final int kSuspensionLiftSoftLimit=(int) Math.round(5*kSuspensionLiftTicksPerInch); //TODO: GET this, IMPORTANT
         public static final double kSuspensionLiftTolerance =5;
 
-        public static final int kSuspensionWheelTalonID=0;
+        public static final int kSuspensionWheelTalonID=6;
             public static final double kSuspensionWheelTalonP=20;
             public static final double kSuspensionWheelTalonI=0;
             public static final double kSuspensionWheelTalonD=0;
@@ -176,8 +184,7 @@ public class Constants extends ConstantsBase {
                                                             //suck, push, pause, release
         public static final double[] kPlateCenterDeployPauses = {.75,1,2.5,2.75}; 
         //Lidar                                             the pause is in the space between
-        public static final int kPlateCenterLeftLidar= 1;
-        public static final int kPlateCenterCenterLidar = 2;
+        public static final int kPlateCenterLeftLidar=2;
         public static final int kPlateCenterRightLidar = 3;
             
         //0 extend push off 4 retract
