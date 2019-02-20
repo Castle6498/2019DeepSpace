@@ -64,14 +64,11 @@ public class Constants extends ConstantsBase {
             public static final double kLiftShootCargoShip = 24;
             public static final double kWristShootCargoShip = -25;
 
-            public static final double kLiftShootRocketOne = 0;
+            public static final double kLiftShootRocketOne = 10;
             public static final double kWristShootRocketOne = 0;
 
-            public static final double kLiftShootRocketTwo = 0;
+            public static final double kLiftShootRocketTwo = 20;
             public static final double kWristShootRocketTwo = 0;
-
-            public static final double kLiftShootRocketThree = 0;
-            public static final double kWristShootRocketThree = 0;
         
         //Carry Height
             public static final double kLiftCarryLow = 0;
@@ -168,21 +165,21 @@ public class Constants extends ConstantsBase {
     
         //Talon
         public static final int kPlateCenterTalonID=7;
-            public static final double kPlateCenterTalonP=.5;
+            public static final double kPlateCenterTalonP=20;
             public static final double kPlateCenterTalonI=0;
             public static final double kPlateCenterTalonD=0;
             public static final double kPlateCenterTalonF=0;
 
             public static final double kPlateCenterTicksPerInch=1680 / (2.24*Math.PI); 
             public static final double kPlateCenterTalonSoftLimit=15; 
-            public static final double kPlateCenterTalonTolerance = 1;
+            public static final double kPlateCenterTalonTolerance = .5;
 
         //Pneumatics
         public static final int kPlateCenterSuckSolenoidPort=2;
         public static final int[] kPlateCenterDeploySolenoidPort={0,4};
         public static final int kPlateCenterHardStopYeeYeeSolenoidPort=1;
                                                             //suck, push, pause, release
-        public static final double[] kPlateCenterDeployPauses = {.75,1,2.5,2.75}; 
+        public static final double[] kPlateCenterDeployPauses = {.25,.5,1,1.25}; 
         //Lidar                                             the pause is in the space between
         public static final int kPlateCenterLeftLidar=2;
         public static final int kPlateCenterRightLidar = 3;

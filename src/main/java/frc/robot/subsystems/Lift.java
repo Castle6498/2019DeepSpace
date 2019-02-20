@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import frc.robot.Constants;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
+import frc.robot.state_machines.BallControlHelper.SystemState;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -49,7 +50,12 @@ public class Lift extends Subsystem {
         mTalon = CANTalonFactory.tuneLoops(mTalon, 0, Constants.kLiftTalonP,
         Constants.kLiftTalonI, Constants.kLiftTalonD, Constants.kLiftTalonF);
         
+        
        
+    }
+
+    private void setLimitClear(boolean e){
+           mTalon.configClearPositionOnLimitR(e,0);    
     }
 
     public enum ControlState {
@@ -127,30 +133,32 @@ public class Lift extends Subsystem {
 
     private ControlState handleHoming(){
         if(mStateChanged){
-            System.out.println("Lift set home false");
             hasHomed=false;
+            setLimitClear(true);
             mTalon.set(ControlMode.PercentOutput,-.2);
             mTalon.setSelectedSensorPosition(-1);
         }
 
         if(!hasHomed&&mTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
-            System.out.println("home done");
+            mTravelingPosition=.1;
             setPosition(0);
         }
 
+        ControlState newState;
 
         if(hasHomed){
-            setPosition(0);
             if(atPosition()){
-                System.out.println("Home at position");
-            return defaultIdleTest();
+            newState= defaultIdleTest();
             }else{
-                return mWantedState;
+                newState= mWantedState;
             }
         }else{
-            return ControlState.HOMING;
+            newState= ControlState.HOMING;
         }
+
+        if(newState!=ControlState.HOMING)setLimitClear(false);
+        return newState;
     }
 
    

@@ -2,6 +2,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import frc.lib.util.DriveSignal;
+import frc.robot.state_machines.BallControlHelper.CarryHeight;
+import frc.robot.state_machines.BallControlHelper.PickUpHeight;
+import frc.robot.state_machines.BallControlHelper.ShootHeight;
 import edu.wpi.first.wpilibj.XboxController;
 
 /**
@@ -14,7 +17,6 @@ import edu.wpi.first.wpilibj.XboxController;
  */
 public class ControlBoard implements ControlBoardInterface {
     private static ControlBoardInterface mInstance = null;
-
     
 
     public static ControlBoardInterface getInstance() {
@@ -123,9 +125,21 @@ public class ControlBoard implements ControlBoardInterface {
 
           leftMotorOutput=(limit(leftMotorOutput) * 1);
           rightMotorOutput=(limit(rightMotorOutput) * 1 * m_rightSideInvertMultiplier);
+
+          if(getDriveInverted()){
+              leftMotorOutput=-leftMotorOutput;
+              rightMotorOutput=-rightMotorOutput;
+          }
      // System.out.println("Rot:"+turn+" xSpeed: "+xSpeed+" Left: "+leftMotorOutput+ " right: "+rightMotorOutput);
           return new DriveSignal(leftMotorOutput,rightMotorOutput,false);
         
+    }
+
+    boolean driveInverted=false;
+    @Override
+    public boolean getDriveInverted() {
+        if(mDriver.getStickButtonReleased(Hand.kLeft))driveInverted=!driveInverted;
+        return driveInverted;
     }
 
     protected double limit(double value) {
@@ -172,7 +186,7 @@ boolean gear=false;
 			speed=0;
 		}
 		speed*=.1;
-        return speed;
+        return -speed;
     }
 
     @Override
@@ -185,14 +199,35 @@ boolean gear=false;
         return mOperator.getRawButton(8);
     }
 
+    boolean hardStops=false;
     @Override
-    public boolean getBallPickUp() {
-        return mOperator.getAButton();
+    public boolean getHatchHardStops() {
+        if(mDriver.getYButtonReleased())hardStops=!hardStops;
+        return hardStops;
     }
 
     @Override
-    public boolean getBallShootPosition() {
-        return mOperator.getPOV()==270;
+    public boolean getHatchReset() {
+        return false;
+    }
+
+
+
+
+    @Override
+    public PickUpHeight getBallPickUp() {
+        if(mOperator.getAButton())return PickUpHeight.FLOOR;
+        else if (mOperator.getBButton()) return PickUpHeight.LOADING_STATION;
+        else return null;
+    }
+
+    @Override
+    public ShootHeight getBallShootPosition() {
+        int pos = mOperator.getPOV();
+        if(pos==270)return ShootHeight.CARGO_SHIP;
+        else if(pos==180) return ShootHeight.ROCKET_ONE;
+        else if (pos==90) return ShootHeight.ROCKET_TWO;
+        else return null;
     }
 
     @Override
@@ -201,8 +236,9 @@ boolean gear=false;
     }
 
     @Override
-    public boolean getCarryBall() {
-        return false;
+    public CarryHeight getCarryBall() {
+        if(mOperator.getPOV()==0) return CarryHeight.LOW;
+        else return null;
     }
 
     @Override
@@ -231,6 +267,10 @@ boolean gear=false;
 		speed*=.75;
         return speed;
     }
+
+   
+
+   
 
   
 

@@ -141,7 +141,6 @@ public class Wrist extends Subsystem {
 
     private ControlState handleHoming(){
         if(mStateChanged){
-            System.out.println("wrist home set to false");
             hasHomed=false;
             mTalon.set(ControlMode.PercentOutput,.4);
             mTalon.setSelectedSensorPosition(5000);
@@ -149,13 +148,12 @@ public class Wrist extends Subsystem {
 
         if(!hasHomed&&mTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
-            System.out.println("home done");
+            mTravelingPosition=-.1;
             setPosition(0);
         }
 
 
         if(hasHomed){
-            setPosition(0);
             if(atPosition()){
             return defaultIdleTest();
             }else{

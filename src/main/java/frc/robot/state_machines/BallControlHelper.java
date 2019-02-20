@@ -139,13 +139,15 @@ public class BallControlHelper extends Subsystem {
 
     private PickUpHeight mWantedPickUpHeight = PickUpHeight.FLOOR;
     private PickUpHeight mCurrentPickUpHeight = PickUpHeight.FLOOR;
+    boolean pickUpUpdate=false;
 
     private SystemState handlePickUpBall() {
        if(mStateChanged){
            mIntake.setWantedState(Intake.SystemState.PICKINGUP);
        }
        
-       if(mStateChanged || mCurrentPickUpHeight != mWantedPickUpHeight){
+       if(pickUpUpdate || mStateChanged){ // || mCurrentPickUpHeight != mWantedPickUpHeight){
+           pickUpUpdate=false;
             mCurrentPickUpHeight=mWantedPickUpHeight;
             switch(mCurrentPickUpHeight){
                 case FLOOR:
@@ -173,13 +175,14 @@ public class BallControlHelper extends Subsystem {
 
     private ShootHeight mWantedShootHeight = ShootHeight.CARGO_SHIP;
     private ShootHeight mCurrentShootHeight = ShootHeight.CARGO_SHIP;
+    boolean shootPositionUpdate=false;
 
     private SystemState handleShootBallPosition() {
         if(mStateChanged){
             mIntake.setWantedState(Intake.SystemState.IDLE);
         }
         
-        if(mStateChanged || mCurrentShootHeight != mWantedShootHeight){
+        if(shootPositionUpdate || mStateChanged){  //} || mCurrentShootHeight != mWantedShootHeight){
             mCurrentShootHeight=mWantedShootHeight;
             switch(mCurrentShootHeight){
                 case CARGO_SHIP:
@@ -194,10 +197,6 @@ public class BallControlHelper extends Subsystem {
                     mLift.setPosition(Constants.kLiftShootRocketTwo);
                     mWrist.setPosition(Constants.kWristShootRocketTwo);
                 break;
-                case ROCKET_THREE:
-                    mLift.setPosition(Constants.kLiftShootRocketThree);
-                    mWrist.setPosition(Constants.kWristShootRocketThree);
-                break;
             }
         }
 
@@ -207,13 +206,14 @@ public class BallControlHelper extends Subsystem {
 
     private CarryHeight mWantedCarryHeight = CarryHeight.LOW;
     private CarryHeight mCurrentCarryHeight = CarryHeight.LOW;
+    boolean carryBallUpdate = false;
 
     private SystemState handleCarryBall() {
         if(mStateChanged){
             mIntake.setWantedState(Intake.SystemState.IDLE);
         }
  
-        if(mStateChanged || mCurrentCarryHeight != mWantedCarryHeight){
+        if(carryBallUpdate||mStateChanged){//} || mCurrentCarryHeight != mWantedCarryHeight){
             mCurrentCarryHeight=mWantedCarryHeight;
             switch(mCurrentCarryHeight){
                 case LOW:
@@ -270,18 +270,21 @@ public class BallControlHelper extends Subsystem {
             public void pickUp(PickUpHeight mode){
                 mWantedState=SystemState.PICKUPBALL;
                 mWantedPickUpHeight=mode;
+                pickUpUpdate=true;
             }
+
+
         //ShootPostion
         public enum ShootHeight{
             CARGO_SHIP,
             ROCKET_ONE,
-            ROCKET_TWO,
-            ROCKET_THREE
+            ROCKET_TWO
         }
 
         public void shootPosition(ShootHeight mode){
             mWantedState=SystemState.SHOOTBALLPOSITION;
             mWantedShootHeight=mode;
+            shootPositionUpdate=true;
         }
         //Carry
         public enum CarryHeight{
@@ -292,6 +295,7 @@ public class BallControlHelper extends Subsystem {
         public void carry(CarryHeight mode){
             mWantedState=SystemState.CARRYBALL;
             mWantedCarryHeight=mode;
+            carryBallUpdate=true;
         }
 
 

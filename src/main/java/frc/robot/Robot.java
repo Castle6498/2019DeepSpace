@@ -5,10 +5,13 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import frc.robot.CameraVision.LightMode;
 import frc.robot.auto.AutoModeExecuter;
 import frc.robot.loops.Looper;
 import frc.robot.state_machines.BallControlHelper;
+import frc.robot.state_machines.BallControlHelper.CarryHeight;
+import frc.robot.state_machines.BallControlHelper.PickUpHeight;
+import frc.robot.state_machines.BallControlHelper.ShootHeight;
 import frc.robot.state_machines.BallControlHelper.SystemState;
 //import frc.robot.state_machines.Superstructure;
 import frc.robot.subsystems.*;
@@ -56,7 +59,7 @@ public class Robot extends TimedRobot {
 
     private Looper mEnabledLooper = new Looper();
 
-   private CameraVision cameraVision=new CameraVision();
+  
 
   
     public Robot() {
@@ -147,7 +150,9 @@ public class Robot extends TimedRobot {
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mBall.setWantedState(BallControlHelper.SystemState.HOME);
             mPlate.setWantedState(PlateCenter.SystemState.HOMING);
-        
+            
+            CameraVision.setLedMode(LightMode.eOn);
+            CameraVision.setPipeline(0);
 
            zeroAllSensors();
            
@@ -174,28 +179,39 @@ public class Robot extends TimedRobot {
            
 
         mDrive.setOpenLoop(mControlBoard.getDriveSignal());
+        mDrive.lowGear(mControlBoard.getLowGear());
           
        if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
         else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
         else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
         if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
        
-            
-       mPlate.jog(mControlBoard.getHatchPanelJog());
+        mPlate.hardStop(mControlBoard.getHatchHardStops());
 
-        if(mControlBoard.getBallPickUp()) mBall.pickUp(BallControlHelper.PickUpHeight.FLOOR);
-        else if(mControlBoard.getBallShootPosition())mBall.shootPosition(BallControlHelper.ShootHeight.CARGO_SHIP);
+        mPlate.jog(mControlBoard.getHatchPanelJog());
+
+
+        //BALL -----------------------------------------------------------------------------------
+        
+        PickUpHeight pickUpHeight = mControlBoard.getBallPickUp();
+        ShootHeight shootHeight = mControlBoard.getBallShootPosition();
+        CarryHeight carryHeight = mControlBoard.getCarryBall();
+
+        if(pickUpHeight!=null) mBall.pickUp(pickUpHeight);
+        else if(shootHeight!=null)mBall.shootPosition(shootHeight);
+        else if (carryHeight!=null)mBall.carry(carryHeight);
         else if(mControlBoard.getBallShoot()) mBall.setWantedState(BallControlHelper.SystemState.SHOOT);
-         if(mControlBoard.getBallHome()) mBall.setWantedState(BallControlHelper.SystemState.HOME);
+        else if(mControlBoard.getBallHome()) mBall.setWantedState(BallControlHelper.SystemState.HOME);
+        
+  
         
         mBall.jogLift(mControlBoard.getLiftJog());    
      
         mBall.jogWrist(mControlBoard.getWristJog());         
-            
+                   
+      
         
-        mDrive.lowGear(mControlBoard.getLowGear());
-        
-       // System.out.println(cameraVision.getX());
+      // System.out.println(CameraVision.getTx());
           //System.out.println("Left: "+mPlate.getLeftLidar()+" Right: "+mPlate.getRightLidar());
 
            allPeriodic();

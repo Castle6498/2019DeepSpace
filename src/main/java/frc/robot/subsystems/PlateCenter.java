@@ -173,7 +173,7 @@ public class PlateCenter extends Subsystem {
     private boolean hasHomed = false;
     private SystemState handleHoming(){
         if(mStateChanged){
-            
+            System.out.println("plate Home Plate false");
             hasHomed=false;
             mBeltTalon.set(ControlMode.PercentOutput,-.7);
             mBeltTalon.setSelectedSensorPosition(-500);
@@ -181,16 +181,17 @@ public class PlateCenter extends Subsystem {
 
         if(!hasHomed&&mBeltTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
-            System.out.println("home done");
+            System.out.println("plate home done, set to middle");
+            mTravelingSetPosition=0;
             setPosition(Constants.kPlateCenterTalonSoftLimit/2);
         }
-
+       // System.out.println("Current pos: "+getPosition()+ " "+mWantedSetPosition);
 
         if(hasHomed){
-            setPosition(Constants.kPlateCenterTalonSoftLimit/2);
             if(atPosition()){
             return defaultIdleTest();
             }else{
+                //System.out.println("Wanted state: "+mWantedState);
                 return mWantedState;
             }
         }else{
@@ -322,7 +323,7 @@ public class PlateCenter extends Subsystem {
            // System.out.println("Set wanted pos to "+pos);
         }
 
-        public void jog(double amount){
+        public synchronized void jog(double amount){
             setPosition(mWantedSetPosition+=amount);
         }
 
@@ -343,7 +344,7 @@ public class PlateCenter extends Subsystem {
             if(hasHomed&&mWantedSetPosition!=mTravelingSetPosition){
 
                 mTravelingSetPosition=mWantedSetPosition;
-                //System.out.println("set position: "+mTravelingSetPosition);
+                System.out.println("set position: "+mTravelingSetPosition);
                 mBeltTalon.set(ControlMode.Position, mTravelingSetPosition*Constants.kPlateCenterTicksPerInch);
             }
         }
@@ -366,7 +367,7 @@ public class PlateCenter extends Subsystem {
             else mDeploySolenoid.set(DoubleSolenoid.Value.kReverse);
           System.out.println("Push solenoid: "+p);
         }
-        private void hardStop(boolean h){
+        public void hardStop(boolean h){
           mHardStopYeeYeeSolenoid.set(h);
          System.out.println("HardStop solenoid: "+h);
         }
