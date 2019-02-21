@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import frc.robot.Constants;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
-import frc.robot.state_machines.BallControlHelper.SystemState;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -50,8 +49,13 @@ public class Lift extends Subsystem {
         mTalon = CANTalonFactory.tuneLoops(mTalon, 0, Constants.kLiftTalonP,
         Constants.kLiftTalonI, Constants.kLiftTalonD, Constants.kLiftTalonF);
         
+        setMaxOuput(.75);
         
        
+    }
+
+    void setMaxOuput(double output){
+        mTalon.configClosedLoopPeakOutput(0, output);
     }
 
     private void setLimitClear(boolean e){

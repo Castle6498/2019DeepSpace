@@ -33,57 +33,43 @@ public class Suspension extends Subsystem {
         return sInstance;
     }
 
-    private TalonSRX mFrontLiftTalon, mBackLiftTalon,mWheelTalon ;
+    private TalonSRX mRaiseTalon, mWheelTalon;
    
     public Suspension() {
         
-      //Front Lift Initialization 
-      mFrontLiftTalon = CANTalonFactory.createTalon(Constants.kSuspensionFrontLiftTalonID, 
-      false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+        //Talon Initialization 
+        mRaiseTalon = CANTalonFactory.createTalon(Constants.kSuspensionBackLiftTalonID, 
+        false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
 
-      mFrontLiftTalon = CANTalonFactory.setupHardLimits(mFrontLiftTalon, LimitSwitchSource.Deactivated,
-      LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,true);
-      
-      mFrontLiftTalon = CANTalonFactory.setupSoftLimits(mFrontLiftTalon, true, Constants.kSuspensionLiftSoftLimit,
-      false, 0);
-      
-      mFrontLiftTalon = CANTalonFactory.tuneLoops(mFrontLiftTalon, 0, Constants.kSuspensionFrontLiftTalonP,
-      Constants.kSuspensionFrontLiftTalonI, Constants.kSuspensionFrontLiftTalonD, Constants.kSuspensionFrontLiftTalonF);
-      
-      //Back Lift Initialization 
-      mBackLiftTalon = CANTalonFactory.createTalon(Constants.kSuspensionBackLiftTalonID, 
-      false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+        mRaiseTalon = CANTalonFactory.setupHardLimits(mRaiseTalon, LimitSwitchSource.Deactivated,
+        LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,true);
+        
+        mRaiseTalon = CANTalonFactory.setupSoftLimits(mRaiseTalon, true, (int) Math.round(Constants.kSuspensionLiftSoftLimit*Constants.kSuspensionLiftTicksPerInch),
+        false, 0);
+        
+        mRaiseTalon = CANTalonFactory.tuneLoops(mRaiseTalon, 0, Constants.kSuspensionBackLiftTalonP,
+        Constants.kSuspensionBackLiftTalonI, Constants.kSuspensionBackLiftTalonD, Constants.kSuspensionBackLiftTalonF);
 
-      mBackLiftTalon = CANTalonFactory.setupHardLimits(mBackLiftTalon, LimitSwitchSource.Deactivated,
-      LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,true);
-      
-      mBackLiftTalon = CANTalonFactory.setupSoftLimits(mBackLiftTalon, true, Constants.kSuspensionLiftSoftLimit,
-      false, 0);
-      
-      mBackLiftTalon = CANTalonFactory.tuneLoops(mBackLiftTalon, 0, Constants.kSuspensionBackLiftTalonP,
-      Constants.kSuspensionBackLiftTalonI, Constants.kSuspensionBackLiftTalonD, Constants.kSuspensionBackLiftTalonF);            
-      
-      //Wheel Initialization 
-      mWheelTalon = CANTalonFactory.createTalon(Constants.kSuspensionWheelTalonID, 
-      false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+        //Wheel Talon
+        mWheelTalon = CANTalonFactory.createTalon(Constants.kSuspensionWheelTalonID, 
+        true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
 
-      mWheelTalon = CANTalonFactory.setupHardLimits(mWheelTalon, LimitSwitchSource.Deactivated,
-      LimitSwitchNormal.Disabled, false, LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled,false);
-      
-      mWheelTalon = CANTalonFactory.setupSoftLimits(mWheelTalon, false, 0, false, 0);
-      
-      mWheelTalon = CANTalonFactory.tuneLoops(mWheelTalon, 0, Constants.kSuspensionWheelTalonP,
-      Constants.kSuspensionWheelTalonI, Constants.kSuspensionWheelTalonD, Constants.kSuspensionWheelTalonF);            
-      
+        mWheelTalon = CANTalonFactory.setupHardLimits(mRaiseTalon, LimitSwitchSource.Deactivated,
+        LimitSwitchNormal.Disabled, false, LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled,false);
+        
+        mWheelTalon = CANTalonFactory.setupSoftLimits(mRaiseTalon, false, 0,
+        false, 0);
+
        
+    }
 
+    private void setLimitClear(boolean e){
+           mRaiseTalon.configClearPositionOnLimitR(e,0);    
     }
 
     public enum ControlState {
         IDLE,
         HOMING,
-        MOVINGTOPOINT,
-        OPENLOOP
     }
 
     private ControlState mControlState = ControlState.IDLE;
@@ -100,6 +86,7 @@ public class Suspension extends Subsystem {
                 mControlState = ControlState.IDLE;
                 mStateChanged = true;
                 mCurrentStateStartTime = timestamp;
+                mWheelTalon.setSelectedSensorPosition(0);
             }
         }
 
@@ -113,13 +100,7 @@ public class Suspension extends Subsystem {
                     break;
                 case HOMING:
                     newState = handleHoming();
-                    break;       
-                case MOVINGTOPOINT:
-                    newState = handleMovingToPoint();
-                    break;
-                case OPENLOOP:
-                    newState = handleOpenLoop();
-                    break;
+                    break;   
                 default:
                     newState = ControlState.IDLE;
                 }
@@ -131,6 +112,8 @@ public class Suspension extends Subsystem {
                 } else {
                     mStateChanged = false;
                 }
+                positionUpdater();
+                positionWheelUpdater();
             }
         }
 
@@ -140,223 +123,174 @@ public class Suspension extends Subsystem {
         }
     };
 
-    //Handlers
-        private ControlState defaultIdleTest(){
-            if(mControlState == mWantedState) return ControlState.IDLE;
-            else return mWantedState;
+
+    private ControlState defaultIdleTest(){
+        if(mControlState == mWantedState){
+            mWantedState=ControlState.IDLE;
+            return ControlState.IDLE; 
         }
+        else return mWantedState;
+    }
 
-        
-        private ControlState handleIdle() {
-            if(mStateChanged){
-                stopMotors();
-            }
-            
-            return defaultIdleTest();
-        }
-
-
-        private double mOpenLoopFrontSetpoint=0;
-        private double mOpenLoopBackSetpoint=0;
-        private double mOpenLoopWheelSetpoint=0;
-        private ControlState handleOpenLoop(){
-            //Don't know about homing here?
-            //Could just rely that it was alread down to begin with
-            mBackLiftTalon.set(ControlMode.PercentOutput,mOpenLoopBackSetpoint);
-            mFrontLiftTalon.set(ControlMode.PercentOutput,mOpenLoopFrontSetpoint);
-            mWheelTalon.set(ControlMode.PercentOutput,mOpenLoopWheelSetpoint);
-            //To make sure that it turns off if changing states
-            if(mWantedState!=ControlState.OPENLOOP) stopMotors();
-
-            return mWantedState;
-        }
-
-        private boolean hasHomed = false;
-
-        private ControlState handleHoming(){
+    private ControlState handleIdle() {
         if(mStateChanged){
-            //mTalon.set(ControlMode.PercentOutput,-.2);
-        } 
-
-        //TODO: Homing procedure
+            stopMotor();
+        }
         
-        //Don't let it move to go to point if it has not homed yet
+       return defaultIdleTest();
+    }
+
+    private boolean hasHomed = false;
+
+    private ControlState handleHoming(){
+        if(mStateChanged){
+            hasHomed=false;
+            setLimitClear(true);
+            mRaiseTalon.set(ControlMode.PercentOutput,-.1);
+            mRaiseTalon.setSelectedSensorPosition(-1);
+        }
+
+        if(!hasHomed&&mRaiseTalon.getSelectedSensorPosition()==0){
+            hasHomed=true;
+            mTravelingPosition=.1;
+            setPosition(0);
+        }
+
+        ControlState newState;
+
         if(hasHomed){
-            return defaultStateTransfer();
+            if(atPosition()){
+            newState= defaultIdleTest();
             }else{
-                return ControlState.HOMING;
+                newState= mWantedState;
             }
+        }else{
+            newState= ControlState.HOMING;
         }
 
-        private double mWantedFrontPosition = 0;
-        private double mTravelingFrontPosition = 0;
+        if(newState!=ControlState.HOMING)setLimitClear(false);
+        return newState;
+    }
 
-        private double mWantedBackPosition = 0;
-        private double mTravelingBackPosition = 0;
-
-        private double mWantedWheelPosition = 0;
-        private double mTravelingWheelPosition = 0;
-
-        private ControlState handleMovingToPoint(){
-            if(hasHomed){
-                if(mStateChanged){
-                    mSetFrontLiftPosition(mWantedFrontPosition);
-                    mSetBackLiftPosition(mWantedBackPosition);
-                    mSetWheelPosition(mWantedWheelPosition);
-                    mTravelingFrontPosition = mWantedFrontPosition;
-                    mTravelingBackPosition = mWantedBackPosition;
-                    mTravelingWheelPosition = mWantedWheelPosition;
-                }
-
-                if(mTravelingFrontPosition!=mWantedFrontPosition){
-                    mSetFrontLiftPosition(mWantedFrontPosition);
-                    mTravelingFrontPosition = mWantedFrontPosition;
-                }
-                if(mTravelingBackPosition!=mWantedBackPosition){
-                    mSetBackLiftPosition(mWantedBackPosition);
-                    mTravelingBackPosition = mWantedBackPosition;
-                }
-                if(mTravelingWheelPosition!=mWantedWheelPosition){
-                    mSetWheelPosition(mWantedWheelPosition);
-                    mTravelingWheelPosition = mWantedWheelPosition;
-                }
-                
-                if(atFrontPosition()&&atBackPosition()&&atWheelPosition()){
-                    return defaultStateTransfer();
-                }else{
-                    return ControlState.IDLE;
-                }
-
-            }else{
-                System.out.println("Tried to move without homing!");
-                return ControlState.IDLE;
-            }
-
-        
-        }
-
-
+   
     
-    //Open Loop Control
-        public synchronized void setOpenLoop(double frontLift, double backLift, double wheel){
-            mWantedState=WantedState.OPENLOOP;
-            mOpenLoopBackSetpoint=backLift;
-            mOpenLoopFrontSetpoint=frontLift;
-            mOpenLoopWheelSetpoint=wheel;
-        } 
-        public synchronized void setBackLiftOpenLoop(double backLift){
-            setOpenLoop(mOpenLoopFrontSetpoint,backLift, mOpenLoopWheelSetpoint);
-        }
-        public synchronized void setFrontLiftOpenLoop(double frontLift){
-            setOpenLoop(frontLift,mOpenLoopBackSetpoint, mOpenLoopWheelSetpoint);
-        }
-        public synchronized void setWheelOpenLoop(double wheel){
-            setOpenLoop(mOpenLoopFrontSetpoint,mOpenLoopBackSetpoint, wheel);
-        }
-        public synchronized void setLiftOpenLoop(double frontLift, double backLift){
-            setOpenLoop(frontLift,backLift, mOpenLoopWheelSetpoint);
-        }
 
-
-    //Position Control
-
-        //Private Individual set point 
-            private synchronized void mSetBackLiftPosition(double set){
-                if(hasHomed){
-                mBackLiftTalon.set(ControlMode.Position, set*Constants.kSuspensionLiftTicksPerInch);
-                }else{
-                    System.out.println("Suspension back tried to move without homing");
-                }
-            }
-            private synchronized void mSetFrontLiftPosition(double set){
-                    if(hasHomed){
-                    mBackLiftTalon.set(ControlMode.Position, set*Constants.kSuspensionLiftTicksPerInch);
-                    }else{
-                        System.out.println("Suspension front tried to move without homing");
-                    }
-                }
-            private synchronized void mSetWheelPosition(double set){
-                
-                mBackLiftTalon.set(ControlMode.Position, set*Constants.kSuspensionWheelTicksPerInch);
-            
-            }
-
-        //Public set points
-            public synchronized void setBackLiftPosition(double set){
-                
-            }
-            public synchronized void setFrontLiftPosition(double set){
-                    
-            }
-            public synchronized void setWheelPosition(double set){
-                
-            }
-
-
-        
-
-        public synchronized boolean atFrontPosition(){
-            //TODO: test getclosedlooptarget
-            if(Math.abs(mFrontLiftTalon.getClosedLoopTarget()-mFrontLiftTalon.getSelectedSensorPosition())<=Constants.kSuspensionLiftTolerance){
-                return true;
-            }else{
-                return false;
-            }
-            
-        }
-        public synchronized boolean atBackPosition(){
-            //TODO: test getclosedlooptarget
-            if(Math.abs(mBackLiftTalon.getClosedLoopTarget()-mBackLiftTalon.getSelectedSensorPosition())<=Constants.kSuspensionLiftTolerance){
-                return true;
-            }else{
-                return false;
-            }
-            
-        }
-        public synchronized boolean atWheelPosition(){
-            //TODO: test getclosedlooptarget
-            if(Math.abs(mWheelTalon.getClosedLoopTarget()-mWheelTalon.getSelectedSensorPosition())<=Constants.kSuspensionWheelTolerance){
-                return true;
-            }else{
-                return false;
-            }
-            
-        }
+    //CLOSED LOOP CONTROL
+    private double mWantedPosition = .1;
+    private double mTravelingPosition = 0;
     
-    //Boring overrides
-        private synchronized void stopMotors(){
-            mBackLiftTalon.set(ControlMode.Disabled,0);
-            mFrontLiftTalon.set(ControlMode.Disabled,0);
-            mWheelTalon.set(ControlMode.Disabled,0);
-        }
-        public synchronized void setWantedState(WantedState state) {
-            mWantedState = state;
-        }
-
-        @Override
-        public void outputToSmartDashboard() {
-            // SmartDashboard.putNumber("suspension_speed", mMasterTalon.get() / Constants.kSuspensionSensorGearReduction);
-        }
-
-        @Override
-        public void stop() {
-            setWantedState(WantedState.IDLE);
-        }
-
-        @Override
-        public void zeroSensors() {
-        }
+    public synchronized void setPosition(double pos){
+        if(pos>=Constants.kSuspensionLiftSoftLimit)pos=Constants.kSuspensionLiftSoftLimit;
+        else if(pos<0)pos=0;
+        mWantedPosition=pos;
+        
+       // System.out.println("Set wanted pos to "+pos);
+    }
+private boolean jog=false;
+    public void jog(double amount){
+        setPosition(mWantedPosition+=amount);
+        jog=true;
+    }
 
 
-        @Override
-        public void registerEnabledLoops(Looper in) {
-            in.register(mLoop);
-        }
+   public boolean atPosition(){
+      if(Math.abs(mWantedPosition-getPosition())<=Constants.kSuspensionLiftTolerance){
+          return true;
+      }else{
+          return false;
+      }
+       
+   }
 
-        public boolean checkSystem() {
-            System.out.println("Testing Suspension.-----------------------------------");
-            boolean failure=false;       
-            return !failure;
-        }
+   public double getPosition(){
+       return mRaiseTalon.getSelectedSensorPosition()/Constants.kSuspensionLiftTicksPerInch;
+   }
+
+   private void positionUpdater(){
+           
+    if(hasHomed&&mWantedPosition!=mTravelingPosition){
+
+        mTravelingPosition=mWantedPosition;
+        if(!jog)System.out.println("Suspension to "+mTravelingPosition);
+        jog=false;
+        mRaiseTalon.set(ControlMode.Position, mTravelingPosition*Constants.kSuspensionLiftTicksPerInch);
+    }
+}
+
+
+
+//WHEEL ___________________________________________________________
+
+private double mWantedWheelPosition = .1;
+    private double mTravelingWheelPosition = 0;
+    
+    public synchronized void setWheelPosition(double pos){
+       
+        mWantedWheelPosition=pos;
+        
+       // System.out.println("Set wanted pos to "+pos);
+    }
+
+    public void jogWheel(double amount){
+        setWheelPosition(mWantedWheelPosition+=amount);
+    }
+
+
+   public boolean atWheelPosition(){
+      if(Math.abs(mWantedWheelPosition-getPosition())<=Constants.kSuspensionWheelTolerance){
+          return true;
+      }else{
+          return false;
+      }
+       
+   }
+
+   public double getWheelPosition(){
+       return mWheelTalon.getSelectedSensorPosition()/Constants.kSuspensionWheelTicksPerInch;
+   }
+
+   private void positionWheelUpdater(){
+           
+    if(mWantedPosition!=mTravelingWheelPosition){
+
+        mTravelingWheelPosition=mWantedWheelPosition;
+        mWheelTalon.set(ControlMode.Position, mTravelingWheelPosition*Constants.kSuspensionWheelTicksPerInch);
+    }
+}
+  
+   private synchronized void stopMotor(){
+        mRaiseTalon.set(ControlMode.Disabled,0);
+        mWheelTalon.set(ControlMode.Disabled, 0);
+    }
+
+    public synchronized void setWantedState(ControlState state) {
+        mWantedState = state;
+    }
+
+    @Override
+    public void outputToSmartDashboard() {
+        // SmartDashboard.putNumber("suspension_speed", mMasterTalon.get() / Constants.kSuspensionSensorGearReduction);
+    }
+
+    @Override
+    public void stop() {
+        setWantedState(ControlState.IDLE);
+    }
+
+    @Override
+    public void zeroSensors() {
+    }
+
+
+    @Override
+    public void registerEnabledLoops(Looper in) {
+        in.register(mLoop);
+    }
+
+    public boolean checkSystem() {
+        System.out.println("Testing Suspension.-----------------------------------");
+        boolean failure=false;       
+        return !failure;
+    }
 
 }*/

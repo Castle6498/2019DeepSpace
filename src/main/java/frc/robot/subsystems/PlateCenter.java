@@ -344,7 +344,7 @@ public class PlateCenter extends Subsystem {
             if(hasHomed&&mWantedSetPosition!=mTravelingSetPosition){
 
                 mTravelingSetPosition=mWantedSetPosition;
-                System.out.println("set position: "+mTravelingSetPosition);
+               // System.out.println("set position: "+mTravelingSetPosition);
                 mBeltTalon.set(ControlMode.Position, mTravelingSetPosition*Constants.kPlateCenterTicksPerInch);
             }
         }
@@ -369,7 +369,7 @@ public class PlateCenter extends Subsystem {
         }
         public void hardStop(boolean h){
           mHardStopYeeYeeSolenoid.set(h);
-         System.out.println("HardStop solenoid: "+h);
+        // System.out.println("HardStop solenoid: "+h);
         }
         private void resetPistons(){
             hardStop(false);

@@ -201,7 +201,7 @@ private void positionUpdater(){
 if(hasHomed&&mWantedPosition!=mTravelingPosition){
 
     mTravelingPosition=mWantedPosition;
-    /*if(!jog)*/ System.out.println("Wrist to "+mTravelingPosition+ " Position now: "+getPosition());
+    /*if(!jog)*/ //System.out.println("Wrist to "+mTravelingPosition+ " Position now: "+getPosition());
     mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kWristTicksPerDeg);
     jog=false;
 }

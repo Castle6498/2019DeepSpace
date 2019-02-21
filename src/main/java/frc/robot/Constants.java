@@ -57,17 +57,17 @@ public class Constants extends ConstantsBase {
         //PickUp
             public static final double kLiftPickUpFloor = 0;
             public static final double kWristPickUpFloor = -140;
-            public static final double kLiftPickUpLoadingStation = 5;
+            public static final double kLiftPickUpLoadingStation = 20;
             public static final double kWristPickUpLoadingStation = 0;
  
         //Shoot Height
             public static final double kLiftShootCargoShip = 24;
             public static final double kWristShootCargoShip = -25;
 
-            public static final double kLiftShootRocketOne = 10;
+            public static final double kLiftShootRocketOne = 6;
             public static final double kWristShootRocketOne = 0;
 
-            public static final double kLiftShootRocketTwo = 20;
+            public static final double kLiftShootRocketTwo = 34;
             public static final double kWristShootRocketTwo = 0;
         
         //Carry Height
@@ -107,7 +107,7 @@ public class Constants extends ConstantsBase {
         public static final int kWristTalonID=8;
         public static final int kWristChildTalonID=0; 
 
-        public static final double kWristTalonP=15;
+        public static final double kWristTalonP=10;
         public static final double kWristTalonI=0;
         public static final double kWristTalonD=0;
         public static final double kWristTalonF=0;
@@ -116,41 +116,35 @@ public class Constants extends ConstantsBase {
         public static final double kWristSoftLimit=160; 
         public static final double kWristTolerance = .5;
 
-        public static final double kWristMaxOutput=.75;
+        public static final double kWristMaxOutput=.6;
 
     //Lift -----------------------------------------------------------
     
         //Talon
         public static final int kLiftTalonID=10;
 
-        public static final double kLiftTalonP=1;
+        public static final double kLiftTalonP=.8;
         public static final double kLiftTalonI=0;
         public static final double kLiftTalonD=0;
         public static final double kLiftTalonF=0;
 
         public static final double kLiftTicksPerInch=4096 /(1.4*Math.PI); 
-        public static final double kLiftSoftLimit=28; 
+        public static final double kLiftSoftLimit=34; 
 
-        public static final double kLiftTolerance = 1;
+        public static final double kLiftTolerance = .5;
 
     //Suspension -----------------------------------------------------------
         
         //Talon
         public static final int kSuspensionBackLiftTalonID=4;
-            public static final double kSuspensionBackLiftTalonP=20;
+            public static final double kSuspensionBackLiftTalonP=1;
             public static final double kSuspensionBackLiftTalonI=0;
             public static final double kSuspensionBackLiftTalonD=0;
             public static final double kSuspensionBackLiftTalonF=0;
 
-        public static final int kSuspensionFrontLiftTalonID=5;
-            public static final double kSuspensionFrontLiftTalonP=20;
-            public static final double kSuspensionFrontLiftTalonI=0;
-            public static final double kSuspensionFrontLiftTalonD=0;
-            public static final double kSuspensionFrontLiftTalonF=0;
-
-        public static final double kSuspensionLiftTicksPerInch=1680 * 1; //TODO: get wheel diam
-        public static final int kSuspensionLiftSoftLimit=(int) Math.round(5*kSuspensionLiftTicksPerInch); //TODO: GET this, IMPORTANT
-        public static final double kSuspensionLiftTolerance =5;
+        public static final double kSuspensionLiftTicksPerInch=1024*4*16; 
+        public static final int kSuspensionLiftSoftLimit=20; 
+        public static final double kSuspensionLiftTolerance =.1;
 
         public static final int kSuspensionWheelTalonID=6;
             public static final double kSuspensionWheelTalonP=20;
@@ -158,8 +152,8 @@ public class Constants extends ConstantsBase {
             public static final double kSuspensionWheelTalonD=0;
             public static final double kSuspensionWheelTalonF=0;
 
-            public static final double kSuspensionWheelTicksPerInch=1680 * 1; //TODO: get wheel diam
-            public static final double kSuspensionWheelTolerance = 5;
+            public static final double kSuspensionWheelTicksPerInch=1680/(2.24*Math.PI); //TODO: get wheel diam
+            public static final double kSuspensionWheelTolerance = .2;
     
     //PlateCenter -----------------------------------------------------------
     

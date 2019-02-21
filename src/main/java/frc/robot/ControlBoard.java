@@ -84,10 +84,17 @@ public class ControlBoard implements ControlBoardInterface {
         double zRotation;
         
         driverArcadeDrive();
+        
 
         xSpeed=throttle;
       
         zRotation = turn;
+
+        boolean inverted =getDriveInverted();
+        if(inverted){
+            xSpeed*=-1;
+            //zRotation*=-1;
+        }
           
       
           // Square the inputs (while preserving the sign) to increase fine control
@@ -96,7 +103,9 @@ public class ControlBoard implements ControlBoardInterface {
             xSpeed = Math.copySign(xSpeed * xSpeed, xSpeed);
             zRotation = Math.copySign(zRotation * zRotation, zRotation);
           }
-      
+          
+         
+
           double leftMotorOutput;
           double rightMotorOutput;
       
@@ -126,10 +135,10 @@ public class ControlBoard implements ControlBoardInterface {
           leftMotorOutput=(limit(leftMotorOutput) * 1);
           rightMotorOutput=(limit(rightMotorOutput) * 1 * m_rightSideInvertMultiplier);
 
-          if(getDriveInverted()){
+         /* if(getDriveInverted()){
               leftMotorOutput=-leftMotorOutput;
               rightMotorOutput=-rightMotorOutput;
-          }
+          }*/
      // System.out.println("Rot:"+turn+" xSpeed: "+xSpeed+" Left: "+leftMotorOutput+ " right: "+rightMotorOutput);
           return new DriveSignal(leftMotorOutput,rightMotorOutput,false);
         
@@ -266,6 +275,34 @@ boolean gear=false;
 
 		speed*=.75;
         return speed;
+    }
+
+    @Override
+    public double getSuspensionJog() {
+        double speed=mDriver.getY(Hand.kRight);
+        if(Math.abs(speed)<=.1){
+            speed=0;
+        }
+
+		//speed*=.1;
+        return -speed;
+    }
+
+
+    @Override
+    public double getSuspensionWheelJog() {
+        double speed=mDriver.getX(Hand.kRight);
+        if(Math.abs(speed)<=.1){
+            speed=0;
+        }
+
+		speed*=.1;
+        return speed;
+    }
+
+    @Override
+    public boolean getSuspensionHome() {
+        return false;
     }
 
    

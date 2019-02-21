@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.Map;
 //kaden was here
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
 /**
  * The main robot class, which instantiates all robot parts and helper classes and initializes all loops. Some classes
  * are already instantiated upon robot startup; for those classes, the robot gets the instance as opposed to creating a
@@ -52,14 +55,14 @@ public class Robot extends TimedRobot {
            mPlate,Wrist.getInstance(),mBall));*/
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mDrive,mPlate,mBall,
-    Intake.getInstance(),Lift.getInstance(),Wrist.getInstance()));
+    Intake.getInstance(),Lift.getInstance(),Wrist.getInstance()));//Suspension.getInstance()));
 
     // Initialize other helper objects
     private ControlBoardInterface mControlBoard = ControlBoard.getInstance();
 
     private Looper mEnabledLooper = new Looper();
 
-  
+  TalonSRX suspension;
 
   
     public Robot() {
@@ -84,7 +87,8 @@ public class Robot extends TimedRobot {
             //Here it is:
           //  AutoModeSelector.initAutoModeSelector();
 
-           
+           suspension= new TalonSRX(4);
+           suspension.set(ControlMode.Disabled,0);
 
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -151,8 +155,8 @@ public class Robot extends TimedRobot {
             mBall.setWantedState(BallControlHelper.SystemState.HOME);
             mPlate.setWantedState(PlateCenter.SystemState.HOMING);
             
-            CameraVision.setLedMode(LightMode.eOn);
-            CameraVision.setPipeline(0);
+            CameraVision.setLedMode(LightMode.eOff);
+            CameraVision.setPipeline(1);
 
            zeroAllSensors();
            
@@ -184,7 +188,9 @@ public class Robot extends TimedRobot {
        if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
         else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
         else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
-        if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+       // if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+
+       //if(mControlBoard.getPlateHome()) mBall.mSuspension.setWantedState(Suspension.ControlState.HOMING);
        
         mPlate.hardStop(mControlBoard.getHatchHardStops());
 
@@ -203,13 +209,16 @@ public class Robot extends TimedRobot {
         else if(mControlBoard.getBallShoot()) mBall.setWantedState(BallControlHelper.SystemState.SHOOT);
         else if(mControlBoard.getBallHome()) mBall.setWantedState(BallControlHelper.SystemState.HOME);
         
-  
+        
         
         mBall.jogLift(mControlBoard.getLiftJog());    
      
         mBall.jogWrist(mControlBoard.getWristJog());         
                    
-      
+       // mBall.jogSuspension(mControlBoard.getSuspensionJog());
+
+       suspension.set(ControlMode.PercentOutput,mControlBoard.getSuspensionJog());
+       // mBall.jogSuspensionWheel(mControlBoard.getSuspensionWheelJog());
         
       // System.out.println(CameraVision.getTx());
           //System.out.println("Left: "+mPlate.getLeftLidar()+" Right: "+mPlate.getRightLidar());

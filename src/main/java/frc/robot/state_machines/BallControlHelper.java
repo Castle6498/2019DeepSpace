@@ -38,6 +38,7 @@ public class BallControlHelper extends Subsystem {
     private final Lift mLift = Lift.getInstance();
     private final Intake mIntake = Intake.getInstance();
     private final Wrist mWrist = Wrist.getInstance();
+    //public final Suspension mSuspension = Suspension.getInstance();
 
     // Intenal state of the system
     public enum SystemState {
@@ -183,6 +184,7 @@ public class BallControlHelper extends Subsystem {
         }
         
         if(shootPositionUpdate || mStateChanged){  //} || mCurrentShootHeight != mWantedShootHeight){
+            shootPositionUpdate=false;
             mCurrentShootHeight=mWantedShootHeight;
             switch(mCurrentShootHeight){
                 case CARGO_SHIP:
@@ -214,6 +216,7 @@ public class BallControlHelper extends Subsystem {
         }
  
         if(carryBallUpdate||mStateChanged){//} || mCurrentCarryHeight != mWantedCarryHeight){
+            carryBallUpdate=false;
             mCurrentCarryHeight=mWantedCarryHeight;
             switch(mCurrentCarryHeight){
                 case LOW:
@@ -255,6 +258,7 @@ public class BallControlHelper extends Subsystem {
        if(mStateChanged){
            mLift.setWantedState(Lift.ControlState.HOMING);
            mWrist.setWantedState(Wrist.ControlState.HOMING);
+           //mSuspension.setWantedState(Suspension.ControlState.HOMING);
        }
 
         return mWantedState;
@@ -306,6 +310,14 @@ public class BallControlHelper extends Subsystem {
 
         public void jogWrist(double amount){
             mWrist.jog(amount);
+        }
+
+        public void jogSuspension(double amount){
+    //        mSuspension.jog(amount);
+        }
+
+        public void jogSuspensionWheel(double amount){
+       //     mSuspension.jogWheel(amount);
         }
 
    

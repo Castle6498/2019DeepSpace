@@ -50,4 +50,10 @@ public interface ControlBoardInterface {
 
     double getWristJog();
 
+    double getSuspensionJog();
+
+    double getSuspensionWheelJog();
+
+    boolean getSuspensionHome();
+
 }
