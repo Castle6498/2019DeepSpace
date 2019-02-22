@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj.Solenoid;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.CameraVision;
 import frc.robot.Constants;
+import frc.robot.CameraVision.CameraMode;
+import frc.robot.CameraVision.LightMode;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 
@@ -27,12 +29,7 @@ import frc.robot.loops.Looper;
  */
 public class PlateCenter extends Subsystem {
     
-    DigitalInput mLidarOne, mLidarTwo;
-    double distanceFromRightBound;
-    double distanceFromCenter;
-    double distanceFromObject;
-  // CameraVision mLimeLight;
-   Compressor compressor;
+   
 
 
     private static PlateCenter sInstance = null;
@@ -47,8 +44,10 @@ public class PlateCenter extends Subsystem {
     private TalonSRX mBeltTalon;
     private final Solenoid mSuckSolenoid, mHardStopYeeYeeSolenoid;
     private final DoubleSolenoid mDeploySolenoid;
-   // private final Ultrasonic mTriggerOutsideLeft, mTriggerOutsideRight, mTriggerInsideLeft, mTriggerInsideRight;
+  
+    DigitalInput mLidar;
 
+    Compressor compressor;
  
 
     
@@ -56,30 +55,29 @@ public class PlateCenter extends Subsystem {
        
 
         //Configure Talon
-        mBeltTalon = CANTalonFactory.createTalon(Constants.kPlateCenterTalonID,
-        false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+            mBeltTalon = CANTalonFactory.createTalon(Constants.kPlateCenterTalonID,
+            false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
 
-        mBeltTalon = CANTalonFactory.setupHardLimits(mBeltTalon, LimitSwitchSource.Deactivated,
-        LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector,
-        LimitSwitchNormal.NormallyOpen, true);
+            mBeltTalon = CANTalonFactory.setupHardLimits(mBeltTalon, LimitSwitchSource.Deactivated,
+            LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector,
+            LimitSwitchNormal.NormallyOpen, true);
 
-        mBeltTalon = CANTalonFactory.setupSoftLimits(mBeltTalon, true, (int) Math.round(Constants.kPlateCenterTalonSoftLimit*Constants.kPlateCenterTicksPerInch),
-        false, 0);
+            mBeltTalon = CANTalonFactory.setupSoftLimits(mBeltTalon, true, (int) Math.round(Constants.kPlateCenterTalonSoftLimit*Constants.kPlateCenterTicksPerInch),
+            false, 0);
 
-        mBeltTalon = CANTalonFactory.tuneLoops(mBeltTalon, 0, Constants.kPlateCenterTalonP,
-        Constants.kPlateCenterTalonI, Constants.kPlateCenterTalonD, Constants.kPlateCenterTalonF);
+            mBeltTalon = CANTalonFactory.tuneLoops(mBeltTalon, 0, Constants.kPlateCenterTalonP,
+            Constants.kPlateCenterTalonI, Constants.kPlateCenterTalonD, Constants.kPlateCenterTalonF);
   
         //LIDAR
-            mLidarOne = new DigitalInput(Constants.kPlateCenterLeftLidar);
-            mLidarTwo = new DigitalInput(Constants.kPlateCenterRightLidar);
+            mLidar = new DigitalInput(Constants.kPlateCenterLidar);
+           
+        //Pneumatics        
+            mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
+            mDeploySolenoid = new DoubleSolenoid(Constants.kPlateCenterDeploySolenoidPort[0],Constants.kPlateCenterDeploySolenoidPort[1]);
+            mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
 
+            compressor = new Compressor();
 
-        
-        mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
-        mDeploySolenoid = new DoubleSolenoid(Constants.kPlateCenterDeploySolenoidPort[0],Constants.kPlateCenterDeploySolenoidPort[1]);
-        mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
-
-        compressor = new Compressor();
         System.out.println("Plate initialized");
     }
 
@@ -199,9 +197,9 @@ public class PlateCenter extends Subsystem {
         }
     }
 
-    boolean leftRange, rightRange;
     double inchesToCenter;
     boolean plateCentered=false;
+
     enum CenteringState {FARLIMIT, SENSE, DONE};
     CenteringState centeringState = CenteringState.FARLIMIT;
     //DigitalInput senseZero = new DigitalInput(0);
@@ -218,15 +216,13 @@ public class PlateCenter extends Subsystem {
         switch(centeringState){
             case FARLIMIT:
             if(atPosition()){
-                mBeltTalon.set(ControlMode.PercentOutput,.2);
+                mBeltTalon.set(ControlMode.PercentOutput,Constants.kPlateCenterCenteringSpeed);
                 centeringState=CenteringState.SENSE;
             }
             case SENSE:
-                //leftRange = mLidarOne.get();      
-                //rightRange = mLidarTwo.get();
-                if(getRightLidar()){
+                if(!getLidar()){
                     stopMotor();
-                    inchesToCenter = getPosition() - slideMiddlePoint; //center point
+                    inchesToCenter = getPosition() - Constants.kPlateCenterTalonSoftLimit/2; 
                     System.out.println("centered succesfully");
                     centeringState = CenteringState.DONE;
                     plateCentered=true;
@@ -238,7 +234,12 @@ public class PlateCenter extends Subsystem {
             
         }
 
-        if(centeringState==CenteringState.DONE)return defaultIdleTest();
+        if(mWantedState!=SystemState.CENTERING){
+            stopMotor();
+            centeringState=CenteringState.DONE;
+        }
+
+        if(centeringState==CenteringState.DONE)return defaultIdleTest(); 
         else return mWantedState;
     }
     
@@ -257,15 +258,16 @@ public class PlateCenter extends Subsystem {
         elapsedTime<= Constants.kPlateCenterDeployPauses[1]) {
             //suck(true);
             push(true);
-            System.out.println("Suck and Push 1");
+            plateCentered=false;
+            //System.out.println("Suck and Push 1");
         } else if(elapsedTime > Constants.kPlateCenterDeployPauses[1]&&
         elapsedTime<= Constants.kPlateCenterDeployPauses[2]) {
             suck(false);
             push(true);
-            System.out.println("unsuck 2");
+           // System.out.println("unsuck 2");
         }else if(elapsedTime > Constants.kPlateCenterDeployPauses[2]&&
         elapsedTime<= Constants.kPlateCenterDeployPauses[3]) {
-            System.out.println("unpush 3");
+            //System.out.println("unpush 3");
             suck(false);
             push(false);
         }else if(elapsedTime>=Constants.kPlateCenterDeployPauses[3]){
@@ -277,41 +279,45 @@ public class PlateCenter extends Subsystem {
     }
 
     private SystemState handleAutoAligning(){
-        //TODO: KADEN GET YOUR CRAP
-        //Need some sort of command to get the inches
-        //from your vision class
+        boolean ready=false;
+
+        if(plateCentered){
         
-            /*
-        if(mStateChanged){
-            distanceFromCenter= Math.tan(mLimeLight.getX())*24;
-            distanceFromRightBound= -distanceFromCenter + (Constants.kSuspensionLiftSoftLimit/2)/Constants.kPlateCenterTicksPerInch;
+            if(mStateChanged){
+                CameraVision.setCameraMode(CameraMode.eVision);
+                CameraVision.setPipeline(0);
+                CameraVision.setLedMode(LightMode.eOn);
+            }
+
+            //Find the offset of target from camera with 0 at middle
+            double target = Constants.kLimeLightDistancetoTarget*Math.tan(Math.toRadians(CameraVision.getTx()));
+
+            //Find set point for motor with 0 on the left 
+            target = Constants.kPlateCenterTalonSoftLimit/2 - 
+                    Constants.kLimeLightDistanceFromCenter - target +inchesToCenter;
+
+            setPosition(target);
+        
+            ready = atPosition();
+
+            SystemState newState=mWantedState;
             
-            if(mLimeLight.getX() == 0){ //Kaden its basically never going to be 0, just a tiny bit off
-            stopMotor();
+            if(ready&&Constants.kLimeLightAutoDeploy) newState = SystemState.DEPLOYINGPLATE;
 
+            if(newState != SystemState.AUTOALIGNING){
+                CameraVision.setCameraMode(CameraMode.eDriver);
+                CameraVision.setPipeline(1);
+                CameraVision.setLedMode(LightMode.eOff);
             }
-            if(mLimeLight.getX() != 0){
 
-           setPosition(distanceFromRightBound);
-            }
-        }
+            return newState;
         
-        //Why would you have this line ? :
-        //setPosition(0);
+        } else return defaultIdleTest();
 
-        /*You are going to have to sense when it is at the correct position
-        *use the atPosition() method to see when it is at the current setPosition setpoint
-        *This is where you need to leave space for the light code (just leave a TODO statement like in 260)
-        */
-
-        return mWantedState;
-
-        //TODO: defaultIdleState
     }
     
    
     //POSITION CONTROL
-        private final double slideMiddlePoint = Constants.kPlateCenterTalonSoftLimit/Constants.kPlateCenterTicksPerInch/2;
         private double mWantedSetPosition=.1;
         private double mTravelingSetPosition=0;
 
@@ -350,11 +356,8 @@ public class PlateCenter extends Subsystem {
         }
 
     //Sensors
-        public boolean getLeftLidar(){
-            return mLidarOne.get();
-        }
-        public boolean getRightLidar(){
-            return mLidarTwo.get();
+        public boolean getLidar(){
+            return mLidar.get();
         }
 
     //Pneumatic Controls

@@ -15,6 +15,7 @@ import frc.robot.loops.Looper;
  * 
  * @see Subsystem.java
  */
+/*
 public class LED extends Subsystem {
     public static final int kDefaultBlinkCount = 4;
     public static final double kDefaultBlinkDuration = 0.2; // seconds for full cycle
@@ -29,41 +30,115 @@ public class LED extends Subsystem {
         return mInstance;
     }
 
-    // Internal state of the system
-    public enum SystemState {
-        OFF, FIXED_ON, BLINKING, RANGE_FINDING
+
+     // Internal state of the system
+     public enum SystemState {
+        OFF, FIXED_ON, BLINKING
     }
 
-    public enum WantedState {
-        OFF, FIXED_ON, BLINK, FIND_RANGE
+
+    enum Color {Blue, Green, Red, Off}
+
+    private class LEDController{
+        DigitalOutput mRed, mGreen, mBlue;
+
+         public boolean mIsBlinking = false;
+
+         public boolean mIsOn=false;
+
+         public double mBlinkDuration;
+         public int mBlinkCount;
+         public double mTotalBlinkDuration;
+
+         private SystemState mSystemState = SystemState.OFF;
+         private SystemState mWantedState = SystemState.OFF;
+
+         public Color mWantedColor=Color.Off;
+
+
+        public LEDController(int blue, int red, int green){
+            mRed = new DigitalOutput(red);
+            mBlue = new DigitalOutput(blue);
+            mGreen = new DigitalOutput(green);
+
+
+            reset();
+        }
+
+        public void reset(){
+            mIsOn=false;
+            setOff();
+            mIsBlinking=false;
+
+            mSystemState = SystemState.OFF;
+            mWantedState = SystemState.OFF;
+        }
+
+        public void setColor(Color color){
+            switch(color){
+                case Red:
+                setRed();
+                break;
+                case Green:
+                setGreen();
+                break;
+                case Blue:
+                setBlue();
+                break;
+                case Off:
+                setOff();
+                break;
+            }
+        }
+
+        public void setRed(){
+            setRGB(true,false,false);
+        }
+
+        public void setGreen(){
+            setRGB(false,true,false);
+        }
+
+        public void setBlue(){
+            setRGB(false,false,true);
+        }
+
+        public void setOff(){
+            setRGB(false, false, false);
+        }
+
+        public void setRGB(boolean red, boolean green, boolean blue){
+            if(red||blue||green)mIsOn=true;
+            else mIsOn=false;
+            mRed.set(red);
+            mGreen.set(green);
+            mBlue.set(blue);
+        }
+
+        public boolean isOn(){
+            return mIsOn;
+        }
+
+        public void configureBlink(double duration, int count){
+            mBlinkCount=count;
+            mBlinkDuration=duration;
+            mTotalBlinkDuration=count*duration;
+            mIsBlinking=true;
+        }
     }
 
-    private SystemState mSystemState = SystemState.OFF;
-    private WantedState mWantedState = WantedState.OFF;
 
-    private boolean mIsLEDOn;
-    private DigitalOutput mLED;
-    private DigitalOutput mRangeLED;
-    private boolean mIsBlinking = false;
-
-    private double mBlinkDuration;
-    private int mBlinkCount;
-    private double mTotalBlinkDuration;
+    
+    private LEDController mPlateLED;
+   
 
     public LED() {
-        mLED = new DigitalOutput(8);
-        mLED.set(false);
+        mPlateLED = new LEDController(Constants.kPlateLEDPorts[0], Constants.kPlateLEDPorts[1], Constants.kPlateLEDPorts[2]);
+        
+        mPlateLED.configureBlink(kDefaultBlinkDuration, kDefaultBlinkCount);    
 
-        mRangeLED = new DigitalOutput(9);
-        setRangeLEDOff();
 
-        // Force a relay change.
-        mIsLEDOn = true;
-        setLEDOff();
 
-        mBlinkDuration = kDefaultBlinkDuration;
-        mBlinkCount = kDefaultBlinkCount;
-        mTotalBlinkDuration = kDefaultTotalBlinkDuration;
     }
 
     private Loop mLoop = new Loop() {
@@ -72,10 +147,12 @@ public class LED extends Subsystem {
         @Override
         public void onStart(double timestamp) {
             synchronized (LED.this) {
-                mSystemState = SystemState.OFF;
-                mWantedState = WantedState.OFF;
-                mLED.set(false);
-                mIsBlinking = false;
+
+                mPlateLED.reset();
+                
+
+
+
             }
 
             mCurrentStateStartTime = timestamp;
@@ -84,99 +161,64 @@ public class LED extends Subsystem {
         @Override
         public void onLoop(double timestamp) {
             synchronized (LED.this) {
-                SystemState newState;
+                SystemState newPlateState;
                 double timeInState = timestamp - mCurrentStateStartTime;
-                switch (mSystemState) {
-                case OFF:
-                    newState = handleOff();
-                    break;
+                switch (mPlateLED.mSystemState) {
                 case BLINKING:
-                    newState = handleBlinking(timeInState);
+                newPlateState = handleBlinking(mPlateLED, timeInState);
                     break;
                 case FIXED_ON:
-                    newState = handleFixedOn();
-                    break;
-                case RANGE_FINDING:
-                    newState = handleRangeFinding(timeInState);
+                newPlateState = handleFixedOn(mPlateLED);
                     break;
                 default:
                     System.out.println("Fell through on LED states!!");
-                    newState = SystemState.OFF;
+                    newPlateState = SystemState.OFF;
                 }
-                if (newState != mSystemState) {
-                    System.out.println("LED state " + mSystemState + " to " + newState);
-                    mSystemState = newState;
+                if (newPlateState != mPlateLED.mSystemState) {
+                    System.out.println("LED state " + mPlateLED.mSystemState + " to " + newPlateState);
+                    mPlateLED.mSystemState = newPlateState;
                     mCurrentStateStartTime = timestamp;
                 }
+
+
+
+
+
+
+
+
+
             }
         }
 
         @Override
         public void onStop(double timestamp) {
-            setLEDOff();
+            mPlateLED.reset();
         }
     };
 
-    private SystemState defaultStateTransfer() {
-        switch (mWantedState) {
-        case OFF:
-            return SystemState.OFF;
-        case BLINK:
-            return SystemState.BLINKING;
-        case FIND_RANGE:
-            return SystemState.RANGE_FINDING;
-        case FIXED_ON:
-            return SystemState.FIXED_ON;
-        default:
-            return SystemState.OFF;
-        }
+    
+
+    private synchronized SystemState handleFixedOn(LEDController led) {
+        led.setColor(led.mWantedColor);
+
+        return led.mWantedState;
     }
 
-    private synchronized SystemState handleOff() {
-        setLEDOff();
-        setRangeLEDOff();
-        return defaultStateTransfer();
-    }
 
-    private synchronized SystemState handleFixedOn() {
-        setLEDOn();
-        return defaultStateTransfer();
-    }
-
-    public synchronized void setRangeBlicking(boolean isBlinking) {
-        mIsBlinking = isBlinking;
-    }
-
-    private synchronized SystemState handleRangeFinding(double timeInState) {
-        // Set main LED on.
-        setLEDOn();
-
-        if (mIsBlinking) {
-            int cycleNum = (int) (timeInState / (mBlinkDuration / 2.0));
-            if ((cycleNum % 2) == 0) {
-                setRangeLEDOn();
-            } else {
-                setRangeLEDOff();
-            }
-        }
-        return defaultStateTransfer();
-    }
-
-    private synchronized SystemState handleBlinking(double timeInState) {
-        if (timeInState > mTotalBlinkDuration) {
-            setLEDOff();
+    private synchronized SystemState handleBlinking(LEDController led, double timeInState) {
+        if (timeInState > led.mTotalBlinkDuration) {
+            led.setOff();
             // Transition to OFF state and clear wanted state.
-            mWantedState = WantedState.OFF;
+            led.mWantedState = SystemState.OFF;
             return SystemState.OFF;
         }
 
-        int cycleNum = (int) (timeInState / (mBlinkDuration / 2.0));
+        int cycleNum = (int) (timeInState / (led.mBlinkDuration / 2.0));
         if ((cycleNum % 2) == 0) {
-            setLEDOn();
-            setRangeLEDOn();
+            led.setColor(led.mWantedColor);
         } else {
-            setLEDOff();
-            setRangeLEDOff();
+            led.setOff();
         }
         return SystemState.BLINKING;
     }
@@ -205,31 +247,9 @@ public class LED extends Subsystem {
         mWantedState = state;
     }
 
-    public synchronized void setLEDOn() {
-        if (!mIsLEDOn) {
-            mIsLEDOn = true;
-            mLED.set(true);
-        }
-    }
-
-    public synchronized void setLEDOff() {
-        if (mIsLEDOn) {
-            mIsLEDOn = false;
-            mLED.set(false);
-        }
-    }
-
-    public synchronized void setRangeLEDOn() {
-        mRangeLED.set(true);
-    }
-
-    public synchronized void setRangeLEDOff() {
-        mRangeLED.set(false);
-    }
-
     public synchronized void configureBlink(int blinkCount, double blinkDuration) {
         mBlinkDuration = blinkDuration;
         mBlinkCount = blinkCount;
         mTotalBlinkDuration = mBlinkCount * mBlinkDuration;
     }
-}
+}*/

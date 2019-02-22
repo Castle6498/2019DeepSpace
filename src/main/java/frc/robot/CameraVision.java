@@ -6,7 +6,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 /**
  * Wrapper class for getting and setting Limelight NetworkTable values.
  * 
- * @author Dan Waxman
+ * 
  */
 public class CameraVision {
 	private static NetworkTableInstance table = null;
@@ -14,7 +14,7 @@ public class CameraVision {
 	/**
 	 * Light modes for Limelight.
 	 * 
-	 * @author Dan Waxman
+	 *
 	 */
 	public static enum LightMode {
 		eOn, eOff, eBlink
@@ -23,7 +23,7 @@ public class CameraVision {
 	/**
 	 * Camera modes for Limelight.
 	 * 
-	 * @author Dan Waxman
+	 * 
 	 */
 	public static enum CameraMode {
 		eVision, eDriver

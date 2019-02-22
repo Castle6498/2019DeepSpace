@@ -175,14 +175,22 @@ public class Constants extends ConstantsBase {
                                                             //suck, push, pause, release
         public static final double[] kPlateCenterDeployPauses = {.25,.5,1,1.25}; 
         //Lidar                                             the pause is in the space between
-        public static final int kPlateCenterLeftLidar=2;
-        public static final int kPlateCenterRightLidar = 3;
+        public static final int kPlateCenterLidar=2;
+
+        public static final double kPlateCenterCenteringSpeed=.3;
+
+        //LimeLight
+
+        public static final double kLimeLightDistancetoTarget=24;
+                                    //Right is pos, left neg
+        public static final double kLimeLightDistanceFromCenter=-1;
+
+        public static final boolean kLimeLightAutoDeploy=true;
             
-        //0 extend push off 4 retract
-        //1 hardstop
-        //suck 2
-        //3 shifter
-        
+ 
+    //LED -------------------------------------------------------------------------------
+
+        public static final int[] kPlateLEDPorts = {4,5,6};
     
 
     

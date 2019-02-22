@@ -62,8 +62,6 @@ public class Robot extends TimedRobot {
 
     private Looper mEnabledLooper = new Looper();
 
-  TalonSRX suspension;
-
   
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -86,9 +84,6 @@ public class Robot extends TimedRobot {
 
             //Here it is:
           //  AutoModeSelector.initAutoModeSelector();
-
-           suspension= new TalonSRX(4);
-           suspension.set(ControlMode.Disabled,0);
 
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -181,45 +176,46 @@ public class Robot extends TimedRobot {
         try {
             //double timestamp = Timer.getFPGATimestamp();
            
+        
+        //DRIVE ---------------------------------------------------------------------------------------
 
-        mDrive.setOpenLoop(mControlBoard.getDriveSignal());
-        mDrive.lowGear(mControlBoard.getLowGear());
+            mDrive.setOpenLoop(mControlBoard.getDriveSignal());
+            mDrive.lowGear(mControlBoard.getLowGear());
           
-       if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
-        else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
-        else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
-       // if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+        //PLATE -------------------------------------------------------------------------------------
 
-       //if(mControlBoard.getPlateHome()) mBall.mSuspension.setWantedState(Suspension.ControlState.HOMING);
-       
-        mPlate.hardStop(mControlBoard.getHatchHardStops());
+            if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
+            else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
+            else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
+            else if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+        
+            mPlate.hardStop(mControlBoard.getHatchHardStops());
 
-        mPlate.jog(mControlBoard.getHatchPanelJog());
+            mPlate.jog(mControlBoard.getHatchPanelJog());
 
 
         //BALL -----------------------------------------------------------------------------------
         
-        PickUpHeight pickUpHeight = mControlBoard.getBallPickUp();
-        ShootHeight shootHeight = mControlBoard.getBallShootPosition();
-        CarryHeight carryHeight = mControlBoard.getCarryBall();
+            PickUpHeight pickUpHeight = mControlBoard.getBallPickUp();
+            ShootHeight shootHeight = mControlBoard.getBallShootPosition();
+            CarryHeight carryHeight = mControlBoard.getCarryBall();
 
-        if(pickUpHeight!=null) mBall.pickUp(pickUpHeight);
-        else if(shootHeight!=null)mBall.shootPosition(shootHeight);
-        else if (carryHeight!=null)mBall.carry(carryHeight);
-        else if(mControlBoard.getBallShoot()) mBall.setWantedState(BallControlHelper.SystemState.SHOOT);
-        else if(mControlBoard.getBallHome()) mBall.setWantedState(BallControlHelper.SystemState.HOME);
+            if(pickUpHeight!=null) mBall.pickUp(pickUpHeight);
+            else if(shootHeight!=null)mBall.shootPosition(shootHeight);
+            else if (carryHeight!=null)mBall.carry(carryHeight);
+            else if(mControlBoard.getBallShoot()) mBall.setWantedState(BallControlHelper.SystemState.SHOOT);
+            else if(mControlBoard.getBallHome()) mBall.setWantedState(BallControlHelper.SystemState.HOME);
+            
+            mBall.jogLift(mControlBoard.getLiftJog());    
         
-        
-        
-        mBall.jogLift(mControlBoard.getLiftJog());    
-     
-        mBall.jogWrist(mControlBoard.getWristJog());         
+            mBall.jogWrist(mControlBoard.getWristJog());         
                    
        // mBall.jogSuspension(mControlBoard.getSuspensionJog());
 
-       suspension.set(ControlMode.PercentOutput,mControlBoard.getSuspensionJog());
+      // suspension.set(ControlMode.PercentOutput,mControlBoard.getSuspensionJog());
        // mBall.jogSuspensionWheel(mControlBoard.getSuspensionWheelJog());
         
+
       // System.out.println(CameraVision.getTx());
           //System.out.println("Left: "+mPlate.getLeftLidar()+" Right: "+mPlate.getRightLidar());
 
