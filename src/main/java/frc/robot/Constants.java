@@ -117,6 +117,23 @@ public class Constants extends ConstantsBase {
         public static final double kWristTolerance = .5;
 
         public static final double kWristMaxOutput=.6;
+    //CLIMBING CONTROLS --------------------------------------------
+    
+        public static final double kLiftClimbP=.8;
+        public static final double kLiftClimbI=0;
+        public static final double kLiftClimbD=0;
+        public static final double kLiftClimbF=0;
+
+        public static final double kLiftClimbVelocity=0;    
+
+        public static final double kSuspensionClimbP=1;
+        public static final double kSuspensionClimbI=0;
+        public static final double kSuspensionClimbD=0;
+        public static final double kSuspensionClimbF=0;
+
+        public static final double kSuspensoinClimbVelocity=0;
+
+
 
     //Lift -----------------------------------------------------------
     
@@ -141,6 +158,8 @@ public class Constants extends ConstantsBase {
             public static final double kSuspensionBackLiftTalonI=0;
             public static final double kSuspensionBackLiftTalonD=0;
             public static final double kSuspensionBackLiftTalonF=0;
+
+            
 
         public static final double kSuspensionLiftTicksPerInch=1024*4*16; 
         public static final int kSuspensionLiftSoftLimit=20; 

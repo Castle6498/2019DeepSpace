@@ -49,9 +49,8 @@ public class Lift extends Subsystem {
         mTalon = CANTalonFactory.tuneLoops(mTalon, 0, Constants.kLiftTalonP,
         Constants.kLiftTalonI, Constants.kLiftTalonD, Constants.kLiftTalonF);
         
-        setMaxOuput(.75);
-        
-       
+        //setMaxOuput(.75);
+     
     }
 
     void setMaxOuput(double output){
