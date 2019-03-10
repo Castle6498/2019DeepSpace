@@ -11,11 +11,15 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.CameraVision;
 import frc.robot.Constants;
+import frc.robot.ControlBoard;
+import frc.robot.ControlBoardInterface;
 import frc.robot.CameraVision.CameraMode;
 import frc.robot.CameraVision.LightMode;
+import frc.robot.ControlBoardInterface.Controller;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 
@@ -30,7 +34,7 @@ import frc.robot.loops.Looper;
 public class PlateCenter extends Subsystem {
     
    
-
+    private ControlBoardInterface mControlBoard = ControlBoard.getInstance();
 
     private static PlateCenter sInstance = null;
 
@@ -43,7 +47,7 @@ public class PlateCenter extends Subsystem {
 
     private TalonSRX mBeltTalon;
     private final Solenoid mSuckSolenoid, mHardStopYeeYeeSolenoid;
-    private final DoubleSolenoid mDeploySolenoid;
+    private final DoubleSolenoid mDeploySolenoid, mVaccuumReleaseSolenoid;
   
     DigitalInput mLidar;
 
@@ -75,10 +79,16 @@ public class PlateCenter extends Subsystem {
             mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
             mDeploySolenoid = new DoubleSolenoid(Constants.kPlateCenterDeploySolenoidPort[0],Constants.kPlateCenterDeploySolenoidPort[1]);
             mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
+            mVaccuumReleaseSolenoid = new DoubleSolenoid(Constants.kPlateVaccuumReleaseSolenoidPort[0],Constants.kPlateVaccuumReleaseSolenoidPort[1]);
+
 
             compressor = new Compressor();
 
         System.out.println("Plate initialized");
+    }
+
+    private void setLimitClear(boolean e){
+        mBeltTalon.configClearPositionOnLimitR(e,0);    
     }
 
     public enum SystemState {
@@ -120,26 +130,26 @@ public class PlateCenter extends Subsystem {
                     newState = handleCentering();
                     break;                
                 case AUTOALIGNING:
-                    newState = handleAutoAligning();
+                    newState = handleAutoAligning(timestamp, mCurrentStateStartTime);
                     break;  
                 case DEPLOYINGPLATE:
                     newState = handleDeployingPlate(timestamp, mCurrentStateStartTime);
                     break;  
                 case HOMING:
-                    newState = handleHoming();
+                    newState = handleHoming(timestamp, mCurrentStateStartTime);
                     break;
                 default:
                     newState = SystemState.IDLE;
                 }
                 if (newState != mSystemState) {
-                    System.out.println("PlateCenter state " + mSystemState + " to " + newState);
+                    System.out.println("PlateCenter state " + mSystemState + " to " + newState + " "+timestamp);
                     mSystemState = newState;
                     mCurrentStateStartTime = timestamp;
                     mStateChanged = true;
                 } else {
                     mStateChanged = false;
                 }
-                positionUpdater();
+                if(hasHomed)positionUpdater();
             }
           //  System.out.println("Plate Loop");
         }
@@ -162,133 +172,220 @@ public class PlateCenter extends Subsystem {
     private SystemState handleIdle() {
         if(mStateChanged){
             stopMotor();
-            resetPistons();
+            //resetPistons();
+            
         }
        
         return defaultIdleTest();
     }
     
     private boolean hasHomed = false;
-    private SystemState handleHoming(){
+
+    
+
+    private SystemState handleHoming(double now, double startedAt){
         if(mStateChanged){
-            System.out.println("plate Home Plate false");
             hasHomed=false;
+            setLimitClear(true);
             mBeltTalon.set(ControlMode.PercentOutput,-.7);
             mBeltTalon.setSelectedSensorPosition(-500);
         }
 
+        if((now-startedAt)>2.5) {
+            System.out.println("plate reset triggered");
+            stopMotor();
+            return SystemState.IDLE;
+        }
+        
+
+
         if(!hasHomed&&mBeltTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
-            System.out.println("plate home done, set to middle");
-            mTravelingSetPosition=0;
+            mTravelingSetPosition=.1;
+            System.out.println("plate has Homed");
             setPosition(Constants.kPlateCenterTalonSoftLimit/2);
         }
        // System.out.println("Current pos: "+getPosition()+ " "+mWantedSetPosition);
 
-        if(hasHomed){
-            if(atPosition()){
-            return defaultIdleTest();
-            }else{
-                //System.out.println("Wanted state: "+mWantedState);
-                return mWantedState;
-            }
-        }else{
-            return SystemState.HOMING;
-        }
-    }
+       SystemState newState;
 
-    double inchesToCenter;
-    boolean plateCentered=false;
+       if(hasHomed){
+           if(atPosition()){
+           newState= defaultIdleTest();
+           }else{
+               newState= mWantedState;
+           }
+       }else{
+           newState= SystemState.HOMING;
+       }
 
-    enum CenteringState {FARLIMIT, SENSE, DONE};
-    CenteringState centeringState = CenteringState.FARLIMIT;
-    //DigitalInput senseZero = new DigitalInput(0);
-    TalonSRX exTal = new TalonSRX(8);
+       if(newState!=SystemState.HOMING)setLimitClear(false);
+       return newState;
+   }
 
-    private SystemState handleCentering() {
-        if(mStateChanged){
-            System.out.println("Centering");
-            setPosition(0);
-            centeringState = CenteringState.FARLIMIT;
-            plateCentered=false;
-        }    
+   double inchesToCenter;
+   boolean plateCentered=false;
+
+   enum CenteringState {FARLIMIT, SENSE, DONE};
+   CenteringState centeringState = CenteringState.FARLIMIT;
+
+   private SystemState handleCentering() {
+       if(mStateChanged){
+           System.out.println("Centering");
+           setPosition(0);
+           centeringState = CenteringState.FARLIMIT;
+           plateCentered=false;
+           mTravelingSetPosition=.1;
+           hardStop(false);
+           vacRelease(true);
+           suck(true);
+       }    
        
-        switch(centeringState){
-            case FARLIMIT:
-            if(atPosition()){
-                mBeltTalon.set(ControlMode.PercentOutput,Constants.kPlateCenterCenteringSpeed);
-                centeringState=CenteringState.SENSE;
-            }
-            case SENSE:
-                if(!getLidar()){
-                    stopMotor();
-                    inchesToCenter = getPosition() - Constants.kPlateCenterTalonSoftLimit/2; 
-                    System.out.println("centered succesfully");
-                    centeringState = CenteringState.DONE;
-                    plateCentered=true;
-                }else if(getPosition()>=Constants.kPlateCenterTalonSoftLimit) {
-                    System.out.println("center failed");
-                    centeringState = CenteringState.DONE;
-                    plateCentered=false;
-                }
-            
-        }
+      System.out.println("Lidar: "+getLidar()+ " State: "+centeringState);
 
-        if(mWantedState!=SystemState.CENTERING){
-            stopMotor();
-            centeringState=CenteringState.DONE;
-        }
+       switch(centeringState){
+           case FARLIMIT:
+           if(atPosition()){
+               mBeltTalon.set(ControlMode.PercentOutput,Constants.kPlateCenterCenteringSpeed);
+               centeringState=CenteringState.SENSE;
+           }
+           break;
+           case SENSE:
+               if(getLidar()){
+                   stopMotor();
+                   inchesToCenter = getPosition() - Constants.kPlateCenterTalonSoftLimit/2; 
+                   System.out.println("centered succesfully, inches to center: "+inchesToCenter);
+                   centeringState = CenteringState.DONE;
+                   plateCentered=true;
+               }else if(getPosition()>=Constants.kPlateCenterTalonSoftLimit&&centeringState!=CenteringState.FARLIMIT) {
+                   System.out.println("center failed");
+                   centeringState = CenteringState.DONE;
+                   plateCentered=false;
+               }
+           break;
+       }
 
-        if(centeringState==CenteringState.DONE)return defaultIdleTest(); 
-        else return mWantedState;
-    }
+       if(mWantedState!=SystemState.CENTERING){
+           stopMotor();
+           centeringState=CenteringState.DONE;
+       }
+
+       if(centeringState==CenteringState.DONE){
+           hardStop(true);
+           return defaultIdleTest(); 
+       }
+       else return mWantedState;
+   }
     
+   enum PlateDeployState {VacOn, Suck, Push, vacOff, Retract, FinalReset, Done}
+
+   private PlateDeployState deployState = PlateDeployState.VacOn;
+   private double lastStateStart=0;
+   private double elapsedStateTime=0;
+
     private SystemState handleDeployingPlate(double now, double startStartedAt) {
         
         if (mStateChanged) {
            stopMotor();
-           System.out.println("Deploying Plate");    
-            //suck(true);
+           System.out.println("Deploying Plate");  
+            deployState= PlateDeployState.VacOn;
+            lastStateStart=now;
+           
         }
 
-        double elapsedTime = now - startStartedAt;
-        System.out.println(elapsedTime);
+
+         elapsedStateTime = now - lastStateStart;
         
-        if (elapsedTime > Constants.kPlateCenterDeployPauses[0]&&
-        elapsedTime<= Constants.kPlateCenterDeployPauses[1]) {
-            //suck(true);
-            push(true);
-            plateCentered=false;
-            //System.out.println("Suck and Push 1");
-        } else if(elapsedTime > Constants.kPlateCenterDeployPauses[1]&&
-        elapsedTime<= Constants.kPlateCenterDeployPauses[2]) {
-            suck(false);
-            push(true);
-           // System.out.println("unsuck 2");
-        }else if(elapsedTime > Constants.kPlateCenterDeployPauses[2]&&
-        elapsedTime<= Constants.kPlateCenterDeployPauses[3]) {
-            //System.out.println("unpush 3");
-            suck(false);
-            push(false);
-        }else if(elapsedTime>=Constants.kPlateCenterDeployPauses[3]){
-           return defaultIdleTest(); 
+       
+        PlateDeployState newState=deployState;
+        switch(deployState){
+            case VacOn:
+                vacRelease(true);
+                push(false);
+                if(deployUpdate(Constants.kPlateCenterDeployPauses[0])) 
+                    newState = PlateDeployState.Suck;
+            break;
+            case Suck: 
+                vacRelease(true);
+                suck(true);
+                push(false);
+                if(deployUpdate(Constants.kPlateCenterDeployPauses[1])) 
+                    newState = PlateDeployState.Push;
+            break;
+            case Push: 
+                vacRelease(true);
+                suck(true);
+                push(true);
+                if(deployUpdate(Constants.kPlateCenterDeployPauses[2])) 
+                    newState = PlateDeployState.vacOff;
+            break;
+            case vacOff: 
+                vacRelease(false);
+                suck(false);
+                push(true);
+                if(deployUpdate(Constants.kPlateCenterDeployPauses[3])) 
+                    newState = PlateDeployState.Retract;
+            break;
+            case Retract:
+                vacRelease(false);
+                suck(false);
+                push(false);
+                if(deployUpdate(Constants.kPlateCenterDeployPauses[4])) 
+                    newState = PlateDeployState.FinalReset;
+            break;
+            case FinalReset:
+                vacRelease(false);
+                suck(false);
+                push(false);
+                hardStop(false);
+                setPosition(Constants.kPlateCenterTalonSoftLimit/2);
+                if(deployUpdate(Constants.kPlateCenterDeployPauses[5])) 
+                    newState = PlateDeployState.Done;
+            break;
+        }
+
+
+        if(newState!=deployState){
+            deployState=newState;
+            lastStateStart=now;
+            System.out.println("Plate Deploy State: "+deployState);
+        }
+
+        if(deployState==PlateDeployState.Done){
+            return defaultIdleTest();
         }
         
         return SystemState.DEPLOYINGPLATE;
        
     }
 
-    private SystemState handleAutoAligning(){
+    private boolean deployUpdate(double time){
+        if(time<=elapsedStateTime) return true;
+        else return false;
+    }
+
+    private SystemState handleAutoAligning(double now, double startStartedAt){
         boolean ready=false;
 
         if(plateCentered){
         
             if(mStateChanged){
-                CameraVision.setCameraMode(CameraMode.eVision);
+               // CameraVision.setCameraMode(CameraMode.eVision);
                 CameraVision.setPipeline(0);
-                CameraVision.setLedMode(LightMode.eOn);
+               CameraVision.setLedMode(LightMode.eOn);
+
+               
             }
 
+
+            //d = (h2-h1) / tan(a1+a2)
+            double distance = (Constants.kLimeCameraHeight-Constants.kLimeTargetHeight)/
+                Math.tan(Math.toRadians(Constants.kLimeCameraAngleFromHorizontal+CameraVision.getTy()));
+           
+            double rumble = 1-(distance/Constants.kLimeTriggerDistance);
+            mControlBoard.setRumble(rumble);
+           
+            
             //Find the offset of target from camera with 0 at middle
             double target = Constants.kLimeLightDistancetoTarget*Math.tan(Math.toRadians(CameraVision.getTx()));
 
@@ -296,19 +393,34 @@ public class PlateCenter extends Subsystem {
             target = Constants.kPlateCenterTalonSoftLimit/2 - 
                     Constants.kLimeLightDistanceFromCenter - target +inchesToCenter;
 
-            setPosition(target);
-        
-            ready = atPosition();
+            
+
+            
+                    ready = atPosition();
+            
+
+            if(!CameraVision.isTarget()||now-startStartedAt<=Constants.kLimeLightTargetPause)ready=false;
+            else setPosition(target);
+
+
+
+            System.out.println("Distantce: "+distance+" Target set point: "+target+ " ready: "+ready+" inches to center: "+inchesToCenter+" position: "+getPosition());
+
 
             SystemState newState=mWantedState;
-            
+
             if(ready&&Constants.kLimeLightAutoDeploy) newState = SystemState.DEPLOYINGPLATE;
+           
+
 
             if(newState != SystemState.AUTOALIGNING){
-                CameraVision.setCameraMode(CameraMode.eDriver);
-                CameraVision.setPipeline(1);
                 CameraVision.setLedMode(LightMode.eOff);
+               CameraVision.setPipeline(1);
+                mControlBoard.rumbleOff();
+               // CameraVision.setCameraMode(CameraMode.eDriver);
             }
+
+           
 
             return newState;
         
@@ -328,9 +440,11 @@ public class PlateCenter extends Subsystem {
             
            // System.out.println("Set wanted pos to "+pos);
         }
-
+        
+        private boolean jog=false;
         public synchronized void jog(double amount){
             setPosition(mWantedSetPosition+=amount);
+            jog=true;
         }
 
         public double getPosition(){
@@ -350,7 +464,8 @@ public class PlateCenter extends Subsystem {
             if(hasHomed&&mWantedSetPosition!=mTravelingSetPosition){
 
                 mTravelingSetPosition=mWantedSetPosition;
-               // System.out.println("set position: "+mTravelingSetPosition);
+                if(!jog)System.out.println("Wrist to "+mTravelingSetPosition);
+                jog=false;
                 mBeltTalon.set(ControlMode.Position, mTravelingSetPosition*Constants.kPlateCenterTicksPerInch);
             }
         }
@@ -361,29 +476,39 @@ public class PlateCenter extends Subsystem {
         }
 
     //Pneumatic Controls
+        boolean pistonPrints = false;
+
         private void suck(boolean s){
-           mSuckSolenoid.set(s);
-           System.out.println("Suck solenoid: "+s);
+           mSuckSolenoid.set(!s);
+          if(pistonPrints) System.out.println("Suck solenoid: "+s);
         }
         private void push(boolean p){
             if(p) mDeploySolenoid.set(DoubleSolenoid.Value.kForward);
             else mDeploySolenoid.set(DoubleSolenoid.Value.kReverse);
-          System.out.println("Push solenoid: "+p);
+            if(pistonPrints)System.out.println("Push solenoid: "+p);
         }
         public void hardStop(boolean h){
           mHardStopYeeYeeSolenoid.set(h);
-        // System.out.println("HardStop solenoid: "+h);
+          if(pistonPrints)System.out.println("HardStop solenoid: "+h);
         }
+        public void vacRelease(boolean h){
+         if(h) mVaccuumReleaseSolenoid.set(DoubleSolenoid.Value.kForward);
+           else mVaccuumReleaseSolenoid.set(DoubleSolenoid.Value.kOff);
+           if(pistonPrints)System.out.println("Vac release solenoid: "+h);
+          }
+
+
         private void resetPistons(){
             hardStop(false);
             suck(false);
             push(false);
+            vacRelease(false);
         }
 
     //Boring Stuff
 
         private void stopMotor(){
-            mBeltTalon.set(ControlMode.Disabled,0);
+            mBeltTalon.set(ControlMode.PercentOutput,0);
         }
 
         public synchronized void setWantedState(SystemState state) {
@@ -405,6 +530,7 @@ public class PlateCenter extends Subsystem {
         public void stop() {
             compressor.stop();
             setWantedState(SystemState.IDLE);
+            resetPistons();
         }
 
         @Override

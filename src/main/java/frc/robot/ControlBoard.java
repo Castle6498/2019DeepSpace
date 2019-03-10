@@ -1,8 +1,12 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.lib.util.DriveSignal;
+import frc.robot.CameraVision.StreamMode;
 import frc.robot.state_machines.BallControlHelper.CarryHeight;
+
+import frc.robot.state_machines.BallControlHelper.ClimbReadyHeight;
 import frc.robot.state_machines.BallControlHelper.PickUpHeight;
 import frc.robot.state_machines.BallControlHelper.ShootHeight;
 import edu.wpi.first.wpilibj.XboxController;
@@ -54,27 +58,30 @@ public class ControlBoard implements ControlBoardInterface {
     boolean driveReduction=false;
 	double driveReductionAmount = .7; //remember a higher number means less reduction
 	
-    double turnReduction=.85;
+    
     
     double throttle=0;
     double turn=0;
 	
 	public void driverArcadeDrive() {
         throttle=0;
-		 turn=mDriver.getX(Hand.kLeft)*turnReduction;
+		 turn=mDriver.getX(Hand.kLeft)*Constants.regularTurnReduction;
 		if(mDriver.getTriggerAxis(Hand.kRight)>.05) {
 			throttle=mDriver.getTriggerAxis(Hand.kRight);			
 		}else if(mDriver.getTriggerAxis(Hand.kLeft)>.05) {
 			throttle=-mDriver.getTriggerAxis(Hand.kLeft);
 			turn=-turn;
 		}else {
-			throttle=0;
+            throttle=0;
+            turn=turn*Constants.kDriveSwivelReduction;
 		}
-		if(driveReduction) {
-			turn=turn*driveReductionAmount;
-			throttle=throttle*driveReductionAmount;
+		if(getDriveInverted()&&throttle!=0){
+            //turn=turn;
+            throttle=-throttle;
         }
-		
+        
+
+		//System.out.println("turn: "+turn+" throttle: "+throttle);
     }
 
     @Override
@@ -89,12 +96,6 @@ public class ControlBoard implements ControlBoardInterface {
         xSpeed=throttle;
       
         zRotation = turn;
-
-        boolean inverted =getDriveInverted();
-        if(inverted){
-            xSpeed*=-1;
-            //zRotation*=-1;
-        }
           
       
           // Square the inputs (while preserving the sign) to increase fine control
@@ -135,20 +136,25 @@ public class ControlBoard implements ControlBoardInterface {
           leftMotorOutput=(limit(leftMotorOutput) * 1);
           rightMotorOutput=(limit(rightMotorOutput) * 1 * m_rightSideInvertMultiplier);
 
-         /* if(getDriveInverted()){
-              leftMotorOutput=-leftMotorOutput;
-              rightMotorOutput=-rightMotorOutput;
-          }*/
+        
      // System.out.println("Rot:"+turn+" xSpeed: "+xSpeed+" Left: "+leftMotorOutput+ " right: "+rightMotorOutput);
           return new DriveSignal(leftMotorOutput,rightMotorOutput,false);
         
     }
 
-    boolean driveInverted=false;
+    boolean driveInverted=true;
     @Override
     public boolean getDriveInverted() {
-        if(mDriver.getStickButtonReleased(Hand.kLeft))driveInverted=!driveInverted;
+        if(mDriver.getStickButtonReleased(Hand.kLeft)){
+            driveInverted=!driveInverted;
+            if(driveInverted)CameraVision.setStreamMode(StreamMode.LimeMain);
+            else CameraVision.setStreamMode(StreamMode.USBMain);
+        }
+       
+       
         return driveInverted;
+
+
     }
 
     protected double limit(double value) {
@@ -252,7 +258,7 @@ boolean gear=false;
 
     @Override
     public boolean getBallHome() {
-        return mOperator.getRawButton(7);
+        return mOperator.getRawButtonReleased(7);
     }
 
     @Override
@@ -284,7 +290,7 @@ boolean gear=false;
             speed=0;
         }
 
-		//speed*=.1;
+		speed*=.05;
         return -speed;
     }
 
@@ -296,13 +302,56 @@ boolean gear=false;
             speed=0;
         }
 
-		speed*=.1;
+		
         return speed;
     }
 
     @Override
     public boolean getSuspensionHome() {
         return false;
+    }
+
+    @Override
+    public boolean getClimbEnable() {
+        return mDriver.getPOV()==270;
+    }
+
+    @Override
+    public boolean getClimbNoLift() {
+        return mDriver.getStickButtonReleased(Hand.kRight);
+    }
+
+    @Override
+    public ClimbReadyHeight getClimbHeight() {
+        if(mDriver.getRawButtonReleased(7)){
+            return ClimbReadyHeight.MIDDLE;
+        }else if(mDriver.getRawButtonReleased(8)){
+            return ClimbReadyHeight.HIGH;
+        }else{
+            return null;
+        }
+	}
+
+    @Override
+    public void setRumble(Controller c, RumbleType type, double amount) {
+        if(c==Controller.Driver)mDriver.setRumble(type,amount);
+        else if(c==Controller.Operator)mOperator.setRumble(type,amount);
+    }
+
+    @Override
+    public void rumbleOff() {
+        setRumble(Controller.Driver, RumbleType.kLeftRumble, 0);
+        setRumble(Controller.Driver, RumbleType.kRightRumble, 0);
+        setRumble(Controller.Operator, RumbleType.kLeftRumble, 0);
+        setRumble(Controller.Operator, RumbleType.kRightRumble, 0);
+    }
+
+    @Override
+    public void setRumble(double amount) {
+        setRumble(Controller.Driver, RumbleType.kLeftRumble, amount);
+        setRumble(Controller.Driver, RumbleType.kRightRumble, amount);
+        setRumble(Controller.Operator, RumbleType.kLeftRumble, amount);
+        setRumble(Controller.Operator, RumbleType.kRightRumble, amount);
     }
 
    

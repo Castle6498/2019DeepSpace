@@ -19,7 +19,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
  * 
  *
  */
-/*
+
 public class Suspension extends Subsystem {
     
    
@@ -39,7 +39,7 @@ public class Suspension extends Subsystem {
         
         //Talon Initialization 
         mRaiseTalon = CANTalonFactory.createTalon(Constants.kSuspensionBackLiftTalonID, 
-        false, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+        true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, true);
 
         mRaiseTalon = CANTalonFactory.setupHardLimits(mRaiseTalon, LimitSwitchSource.Deactivated,
         LimitSwitchNormal.Disabled, false, LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,true);
@@ -48,16 +48,20 @@ public class Suspension extends Subsystem {
         false, 0);
         
         mRaiseTalon = CANTalonFactory.tuneLoops(mRaiseTalon, 0, Constants.kSuspensionBackLiftTalonP,
-        Constants.kSuspensionBackLiftTalonI, Constants.kSuspensionBackLiftTalonD, Constants.kSuspensionBackLiftTalonF);
+        Constants.kSuspensionBackLiftTalonI, Constants.kSuspensionBackLiftTalonD, Constants.kSuspensionBackLiftF);
+
+        mRaiseTalon.configMotionCruiseVelocity((int) Math.round((Constants.kSuspensionVelocity*Constants.kSuspensionLiftTicksPerInch)/(10)));
+        mRaiseTalon.configMotionAcceleration((int) Math.round((Constants.kSuspensionAcceleration*Constants.kSuspensionLiftTicksPerInch)/(10)));
+   
 
         //Wheel Talon
         mWheelTalon = CANTalonFactory.createTalon(Constants.kSuspensionWheelTalonID, 
         true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
 
-        mWheelTalon = CANTalonFactory.setupHardLimits(mRaiseTalon, LimitSwitchSource.Deactivated,
+        mWheelTalon = CANTalonFactory.setupHardLimits(mWheelTalon, LimitSwitchSource.Deactivated,
         LimitSwitchNormal.Disabled, false, LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled,false);
         
-        mWheelTalon = CANTalonFactory.setupSoftLimits(mRaiseTalon, false, 0,
+        mWheelTalon = CANTalonFactory.setupSoftLimits(mWheelTalon, false, 0,
         false, 0);
 
        
@@ -146,14 +150,17 @@ public class Suspension extends Subsystem {
         if(mStateChanged){
             hasHomed=false;
             setLimitClear(true);
-            mRaiseTalon.set(ControlMode.PercentOutput,-.1);
-            mRaiseTalon.setSelectedSensorPosition(-1);
+            System.out.println("homing suspension");
+            mRaiseTalon.set(ControlMode.PercentOutput, -.4);
+            mRaiseTalon.setSelectedSensorPosition(-500);
         }
 
         if(!hasHomed&&mRaiseTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
             mTravelingPosition=.1;
+            
             setPosition(0);
+            System.out.println("sensor at 0");
         }
 
         ControlState newState;
@@ -176,8 +183,8 @@ public class Suspension extends Subsystem {
     
 
     //CLOSED LOOP CONTROL
-    private double mWantedPosition = .1;
-    private double mTravelingPosition = 0;
+    private double mWantedPosition = 0;
+    private double mTravelingPosition = 0.1;
     
     public synchronized void setPosition(double pos){
         if(pos>=Constants.kSuspensionLiftSoftLimit)pos=Constants.kSuspensionLiftSoftLimit;
@@ -211,9 +218,9 @@ private boolean jog=false;
     if(hasHomed&&mWantedPosition!=mTravelingPosition){
 
         mTravelingPosition=mWantedPosition;
-        if(!jog)System.out.println("Suspension to "+mTravelingPosition);
+        /*if(!jog)*/System.out.println("Suspension to "+mTravelingPosition);
         jog=false;
-        mRaiseTalon.set(ControlMode.Position, mTravelingPosition*Constants.kSuspensionLiftTicksPerInch);
+        mRaiseTalon.set(ControlMode.MotionMagic, mTravelingPosition*Constants.kSuspensionLiftTicksPerInch);
     }
 }
 
@@ -221,18 +228,22 @@ private boolean jog=false;
 
 //WHEEL ___________________________________________________________
 
-private double mWantedWheelPosition = .1;
-    private double mTravelingWheelPosition = 0;
+private double mWantedWheelPosition = 0;
+    private double mTravelingWheelPosition = 0.1;
     
-    public synchronized void setWheelPosition(double pos){
-       
-        mWantedWheelPosition=pos;
-        
-       // System.out.println("Set wanted pos to "+pos);
+    public synchronized void setWheel(double m){
+        mWheelTalon.set(ControlMode.PercentOutput,m);
     }
 
+
+    public synchronized void setWheelPosition(double pos){      
+        mWantedWheelPosition=pos;
+    }
+
+    private boolean jogWheel;
     public void jogWheel(double amount){
         setWheelPosition(mWantedWheelPosition+=amount);
+        jog=true;
     }
 
 
@@ -251,10 +262,11 @@ private double mWantedWheelPosition = .1;
 
    private void positionWheelUpdater(){
            
-    if(mWantedPosition!=mTravelingWheelPosition){
-
+    if(mWantedWheelPosition!=mTravelingWheelPosition){
+        if(!jogWheel) System.out.println("Suspension wheel to "+mTravelingWheelPosition+ " Position now: "+getWheelPosition());
         mTravelingWheelPosition=mWantedWheelPosition;
         mWheelTalon.set(ControlMode.Position, mTravelingWheelPosition*Constants.kSuspensionWheelTicksPerInch);
+        jog=false;
     }
 }
   
@@ -293,4 +305,4 @@ private double mWantedWheelPosition = .1;
         return !failure;
     }
 
-}*/
+}

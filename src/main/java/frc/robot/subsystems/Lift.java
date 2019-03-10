@@ -15,7 +15,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 /**
  * The suspension subsystem consists of dynamo motors that are meant to send one ball at a time into the shooter.
  * There are ir sensors placed before and after the suspension to sense blockage or emptiness of the hopper.
- * The main things this subsystem has to are feed fuel and unjam
+ * The mail
  * 
  *
  */
@@ -46,11 +46,30 @@ public class Lift extends Subsystem {
         mTalon = CANTalonFactory.setupSoftLimits(mTalon, true, (int) Math.round(Constants.kLiftSoftLimit*Constants.kLiftTicksPerInch),
         false, 0);
         
+
         mTalon = CANTalonFactory.tuneLoops(mTalon, 0, Constants.kLiftTalonP,
         Constants.kLiftTalonI, Constants.kLiftTalonD, Constants.kLiftTalonF);
+
+
+        setClimbTuning(false);
+
+        mTalon = CANTalonFactory.tuneLoops(mTalon, 1, Constants.kLiftClimbP,
+        Constants.kLiftClimbI, Constants.kLiftClimbD, Constants.kLiftClimbF);
         
         //setMaxOuput(.75);
      
+    }
+
+    public void setClimbTuning(boolean t){
+        if(t){
+            mTalon.selectProfileSlot(1, 0);
+            mTalon.configMotionCruiseVelocity((int) Math.round((Constants.kLiftClimbVelocity*Constants.kLiftTicksPerInch)/(10)));
+            mTalon.configMotionAcceleration((int) Math.round((Constants.kLiftClimbAcceleration*Constants.kLiftTicksPerInch)/(10)));
+        }else{
+            mTalon.selectProfileSlot(0, 0);
+            mTalon.configMotionCruiseVelocity((int) Math.round((Constants.kLiftVelocity*Constants.kLiftTicksPerInch)/(10)));
+            mTalon.configMotionAcceleration((int) Math.round((Constants.kLiftAcceleration*Constants.kLiftTicksPerInch)/(10)));
+        }
     }
 
     void setMaxOuput(double output){
@@ -205,8 +224,8 @@ private boolean jog=false;
         mTravelingPosition=mWantedPosition;
         if(!jog)System.out.println("Lift to "+mTravelingPosition);
         jog=false;
-        mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kLiftTicksPerInch);
-    }
+        mTalon.set(ControlMode.MotionMagic, mTravelingPosition*Constants.kLiftTicksPerInch);
+    } 
 }
   
    private synchronized void stopMotor(){

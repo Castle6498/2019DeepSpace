@@ -51,8 +51,11 @@ public class Wrist extends Subsystem {
         mTalon = CANTalonFactory.tuneLoops(mTalon, 0, Constants.kWristTalonP,
         Constants.kWristTalonI, Constants.kWristTalonD, Constants.kWristTalonF);
 
-        setMaxOuput(Constants.kWristMaxOutput);
+        mTalon = CANTalonFactory.tuneLoops(mTalon, 1, Constants.kWristClimbP,
+        Constants.kWristClimbI, Constants.kWristClimbD, Constants.kWristClimbF);
 
+        
+        setClimbTuning(false);
         
         mTalonChild = new TalonSRX(Constants.kWristChildTalonID);
         mTalonChild.setNeutralMode(NeutralMode.Brake);
@@ -63,9 +66,18 @@ public class Wrist extends Subsystem {
        
     }
 
-    void setMaxOuput(double output){
-        mTalon.configClosedLoopPeakOutput(0, output);
+    public void setClimbTuning(boolean t){
+        if(t){
+            mTalon.selectProfileSlot(1, 0);
+           }else{
+            mTalon.selectProfileSlot(0, 0);
+           }
     }
+
+
+    private void setLimitClear(boolean e){
+        mTalon.configClearPositionOnLimitF(e,0);    
+ }
 
     public enum ControlState {
         IDLE,
@@ -142,6 +154,7 @@ public class Wrist extends Subsystem {
     private ControlState handleHoming(){
         if(mStateChanged){
             hasHomed=false;
+            setLimitClear(true);
             mTalon.set(ControlMode.PercentOutput,.4);
             mTalon.setSelectedSensorPosition(5000);
         }
@@ -152,22 +165,26 @@ public class Wrist extends Subsystem {
             setPosition(0);
         }
 
+        ControlState newState;
 
         if(hasHomed){
             if(atPosition()){
-            return defaultIdleTest();
+            newState= defaultIdleTest();
             }else{
-                return mWantedState;
+                newState= mWantedState;
             }
         }else{
-            return ControlState.HOMING;
+            newState= ControlState.HOMING;
         }
+
+        if(newState!=ControlState.HOMING)setLimitClear(false);
+        return newState;
     }
 
 
 //CLOSED LOOP CONTROL
-private double mWantedPosition = -.01;
-private double mTravelingPosition = 0;
+private double mWantedPosition = 0;
+private double mTravelingPosition = -0.1;
 
 public synchronized void setPosition(double pos){
     if(pos<=(-Constants.kWristSoftLimit))pos=-Constants.kWristSoftLimit;
@@ -201,7 +218,7 @@ private void positionUpdater(){
 if(hasHomed&&mWantedPosition!=mTravelingPosition){
 
     mTravelingPosition=mWantedPosition;
-    /*if(!jog)*/ //System.out.println("Wrist to "+mTravelingPosition+ " Position now: "+getPosition());
+    if(!jog) System.out.println("Wrist to "+mTravelingPosition+ " Position now: "+getPosition());
     mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kWristTicksPerDeg);
     jog=false;
 }

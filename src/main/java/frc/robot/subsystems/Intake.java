@@ -1,11 +1,18 @@
 package frc.robot.subsystems;
 
+import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.Constants;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Talon;
 
 /**
  * The suspension subsystem consists of dynamo motors that are meant to send one ball at a time into the shooter.
@@ -27,17 +34,25 @@ public class Intake extends Subsystem {
         return sInstance;
     }
 
-    private Talon mTalon; 
+    private TalonSRX mTalon; 
     private DigitalInput mPhotoeye;
 
     public Intake() {
         
-        //Talon Initialization 
-        mTalon = new Talon(Constants.kIntakeTalonChannel);
-        mTalon.setInverted(true);
+         //Talon Initialization 
+         mTalon = CANTalonFactory.createTalon(Constants.kIntakeTalonID, 
+         true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
+ 
+ 
+         mTalon = CANTalonFactory.setupHardLimits(mTalon,  LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled,false,
+         LimitSwitchSource.Deactivated,LimitSwitchNormal.Disabled, false);
+         
+         mTalon = CANTalonFactory.setupSoftLimits(mTalon, false, 0,false, 0);
         
        //Photoeye Initialization
        mPhotoeye=new DigitalInput(Constants.kIntakeSensorPort);
+        mTalon.setNeutralMode(NeutralMode.Brake);
+       System.out.println("intake on start");
     }
 
     public enum SystemState {
@@ -60,6 +75,7 @@ public class Intake extends Subsystem {
                 mSystemState = SystemState.IDLE;
                 mStateChanged = true;
                 mCurrentStateStartTime = timestamp;
+                System.out.println("Intake started");
             }
         }
 
@@ -109,15 +125,16 @@ public class Intake extends Subsystem {
     }
 
     private SystemState handleIdle() {
-        if(mStateChanged){
+        if(mStateChanged){  
             stopMotor();
         }
+        //System.out.println("ipdate");
         return defaultIdleTest();
     }
 
     private SystemState handlePickingUp(double now){
         if(mStateChanged){
-            mTalon.set(Constants.kIntakePickUpSpeed);
+            setMotor(Constants.kIntakePickUpSpeed);
         }
 
         if(hasBall()){
@@ -134,7 +151,7 @@ public class Intake extends Subsystem {
     private double shootStartTime=0;
     private SystemState handleShooting(double now){
         if(mStateChanged){
-            mTalon.set(Constants.kIntakeShootSpeed);
+            setMotor(Constants.kIntakeShootSpeed);
             shootStartTime=0;
         }
 
@@ -183,12 +200,27 @@ public class Intake extends Subsystem {
 
    
     
- 
+    public synchronized void setMotor(double s){
+        mTalon.set(ControlMode.PercentOutput,s);
+        
+    }
+
+    
+    public double getCurrent(){
+        double current = mTalon.getOutputCurrent();
+        if(true) System.out.println("Intake current: "+current);
+        return current;
+    }
+
+    public boolean getStalled(){
+        return getCurrent()>=Constants.kIntakeCurrentThreshold;
+    }
 
     //Boring Stuff
 
         private void stopMotor(){
-            mTalon.stopMotor();
+            mTalon.set(ControlMode.PercentOutput,.1);
+            //mTalon.set(ControlMode.PercentOutput, .1);
         }
 
 
@@ -204,6 +236,7 @@ public class Intake extends Subsystem {
         @Override
         public void stop() {
             setWantedState(SystemState.IDLE);
+            stopMotor();
         }
 
         @Override

@@ -127,4 +127,19 @@ public class CameraVision {
 
 		return table.getTable("limelight").getEntry(key);
 	}
+
+	
+public enum StreamMode{Both, LimeMain, USBMain}
+	
+	/**
+	 * Sets Stream mode of Limelight.
+	 * 
+	 * @param mode
+	 *            Light mode for Limelight.
+	 */
+	public static void setStreamMode(StreamMode mode) {
+		getValue("stream").setNumber(mode.ordinal());
+	}
+
+
 }
