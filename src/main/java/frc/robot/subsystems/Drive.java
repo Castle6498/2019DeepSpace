@@ -10,8 +10,7 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
-import frc.robot.loops.Loop;
-import frc.robot.loops.Looper;
+
 import frc.lib.util.DriveSignal;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 
@@ -20,7 +19,7 @@ import frc.lib.util.drivers.Talon.CANTalonFactory;
  * 
  *
  */
-public class Drive extends Subsystem {
+public class Drive {
 
     private static Drive mInstance = new Drive();
 
@@ -31,15 +30,7 @@ public class Drive extends Subsystem {
         return mInstance;
     }
 
-    // The robot drivetrain's various states.
-    public enum DriveControlState {
-        OPEN_LOOP, // open loop voltage control
-        POSITION //position control
-    }
 
-
-    // Control states
-    private DriveControlState mDriveControlState;
 
     // Hardware
    // private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave;
@@ -98,42 +89,9 @@ public class Drive extends Subsystem {
       
     }
 
-    private final Loop mLoop = new Loop() {
-        @Override
-        public void onStart(double timestamp) {
-            synchronized (Drive.this) {
-                setOpenLoop(DriveSignal.NEUTRAL);                
-                //mNavXBoard.reset();
-            }
-        }
+   
 
-        @Override
-        public void onLoop(double timestamp) {
-            synchronized (Drive.this) {
-                switch (mDriveControlState) {
-                case OPEN_LOOP:
-                    return;      
-                case POSITION:
-                    return;                          
-                default:
-                    System.out.println("Unexpected drive control state: " + mDriveControlState);
-                    break;
-                }
-            }
-        }
-
-        @Override
-        public void onStop(double timestamp) {
-            stop();
-            
-        }
-    };
-
-    //allows the initialization of the drive loop
-    @Override
-    public void registerEnabledLoops(Looper in) {
-        in.register(mLoop);
-    }
+   
 
     public void lowGear(boolean f){
         mShifter.set(f);
@@ -142,10 +100,7 @@ public class Drive extends Subsystem {
      * Update open loop control
      */
     public synchronized void setOpenLoop(DriveSignal signal) {
-        if (mDriveControlState != DriveControlState.OPEN_LOOP) {
-            mDriveControlState = DriveControlState.OPEN_LOOP;  
-            System.out.println("Drive in open loop"); 
-        }
+     
         setBrakeMode(signal.getBrakeMode());
         // Right side is reversed, but reverseOutput doesn't invert PercentVBus.
         // So set negative on the right master.
@@ -153,29 +108,7 @@ public class Drive extends Subsystem {
         mLeftMaster.set(ControlMode.PercentOutput, signal.getLeft());
     }
 
-    /**
-     * Adjust position setpoint (if already in position mode)
-     * 
-     * @param left_position_inches
-     * @param right_position_inches
-     */
-    public synchronized void setPositionSetpoint(double left_position_inches, double right_position_inches) {
-        if(mDriveControlState != DriveControlState.POSITION){
-            mDriveControlState = DriveControlState.POSITION;
-            System.out.println("Drive in position control");
-            setBrakeMode(true);
-        }
-
-        mLeftMaster.set(ControlMode.Position,inchesToTicks(left_position_inches));
-        mRightMaster.set(ControlMode.Position,inchesToTicks(right_position_inches));
-   }
-
-   public boolean atSetpoint(){
-       if(Math.abs(mLeftMaster.getSelectedSensorPosition()-mLeftMaster.getClosedLoopTarget())>Constants.kDriveTolerance){
-           return true;
-       }else return false;
-   }
-
+  
     private boolean mIsBrakeMode=false;
   
     public boolean isBrakeMode() {
@@ -199,27 +132,14 @@ public class Drive extends Subsystem {
         }
     }
 
-    @Override
-    public synchronized void stop() {
-        setOpenLoop(DriveSignal.NEUTRAL);
-    }
-
-    @Override
-    public void outputToSmartDashboard() {
-
-    }
+   
 
     public synchronized void resetEncoders() {
         mLeftMaster.setSelectedSensorPosition(0);
         mRightMaster.setSelectedSensorPosition(0);
      }
 
-    @Override
-    public void zeroSensors() {
-        resetEncoders();
-       // mNavXBoard.zeroYaw();
-    }
-
+   
 
    
 
@@ -227,16 +147,7 @@ public class Drive extends Subsystem {
         return inches*Constants.kDriveTicksPerInch;
     }
 
-    @Override
-    public void writeToLog() {
-        
-    }
+   
 
-    public boolean checkSystem() {
-        System.out.println("Testing DRIVE.---------------------------------");
-       
-        boolean failure = false;
-        
-        return !failure;
-    }
+   
 }

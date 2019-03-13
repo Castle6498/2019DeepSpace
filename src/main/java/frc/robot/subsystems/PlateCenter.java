@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.CameraVision;
@@ -51,6 +52,8 @@ public class PlateCenter extends Subsystem {
   
     DigitalInput mLidar;
 
+   // Ultrasonic mUltra;
+
     Compressor compressor;
  
 
@@ -74,6 +77,9 @@ public class PlateCenter extends Subsystem {
   
         //LIDAR
             mLidar = new DigitalInput(Constants.kPlateCenterLidar);
+
+        //ULTRA
+          //  mUltra = new Ultrasonic(Constants.kPlateCenterUltraPort[0], Constants.kPlateCenterUltraPort[1]);
            
         //Pneumatics        
             mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
@@ -168,14 +174,15 @@ public class PlateCenter extends Subsystem {
         }
         else return mWantedState;
     }
-
+//double counter = 0;
     private SystemState handleIdle() {
         if(mStateChanged){
             stopMotor();
             //resetPistons();
-            
+           // counter=0;
         }
-       
+       //counter++;
+       //if(counter%20==0)System.out.println("ultra: "+getDistance());
         return defaultIdleTest();
     }
     
@@ -191,7 +198,7 @@ public class PlateCenter extends Subsystem {
             mBeltTalon.setSelectedSensorPosition(-500);
         }
 
-        if((now-startedAt)>2.5) {
+        if((now-startedAt)>3.25) {
             System.out.println("plate reset triggered");
             stopMotor();
             return SystemState.IDLE;
@@ -241,7 +248,7 @@ public class PlateCenter extends Subsystem {
            suck(true);
        }    
        
-      System.out.println("Lidar: "+getLidar()+ " State: "+centeringState);
+     // System.out.println("Lidar: "+getLidar()+ " State: "+centeringState);
 
        switch(centeringState){
            case FARLIMIT:
@@ -363,7 +370,7 @@ public class PlateCenter extends Subsystem {
         if(time<=elapsedStateTime) return true;
         else return false;
     }
-
+double counter = 0;
     private SystemState handleAutoAligning(double now, double startStartedAt){
         boolean ready=false;
 
@@ -373,7 +380,7 @@ public class PlateCenter extends Subsystem {
                // CameraVision.setCameraMode(CameraMode.eVision);
                 CameraVision.setPipeline(0);
                CameraVision.setLedMode(LightMode.eOn);
-
+               counter=0;
                
             }
 
@@ -383,15 +390,16 @@ public class PlateCenter extends Subsystem {
                 Math.tan(Math.toRadians(Constants.kLimeCameraAngleFromHorizontal+CameraVision.getTy()));
            
             double rumble = 1-(distance/Constants.kLimeTriggerDistance);
-            mControlBoard.setRumble(rumble);
            
+           if(counter%15==0) mControlBoard.setRumble(rumble);
+           counter++;
             
             //Find the offset of target from camera with 0 at middle
             double target = Constants.kLimeLightDistancetoTarget*Math.tan(Math.toRadians(CameraVision.getTx()));
 
             //Find set point for motor with 0 on the left 
             target = Constants.kPlateCenterTalonSoftLimit/2 - 
-                    Constants.kLimeLightDistanceFromCenter - target +inchesToCenter;
+                    Constants.kLimeLightDistanceFromCenter - target +inchesToCenter+1;
 
             
 
@@ -400,11 +408,11 @@ public class PlateCenter extends Subsystem {
             
 
             if(!CameraVision.isTarget()||now-startStartedAt<=Constants.kLimeLightTargetPause)ready=false;
-            else setPosition(target);
+            else if(counter%3==0)setPosition(target);
 
 
 
-            System.out.println("Distantce: "+distance+" Target set point: "+target+ " ready: "+ready+" inches to center: "+inchesToCenter+" position: "+getPosition());
+           // System.out.println("Distantce: "+distance+" Target set point: "+target+ " ready: "+ready+" inches to center: "+inchesToCenter+" position: "+getPosition());
 
 
             SystemState newState=mWantedState;
@@ -445,6 +453,7 @@ public class PlateCenter extends Subsystem {
         public synchronized void jog(double amount){
             setPosition(mWantedSetPosition+=amount);
             jog=true;
+      
         }
 
         public double getPosition(){
@@ -475,6 +484,8 @@ public class PlateCenter extends Subsystem {
             return mLidar.get();
         }
 
+       
+
     //Pneumatic Controls
         boolean pistonPrints = false;
 
@@ -490,8 +501,10 @@ public class PlateCenter extends Subsystem {
         public void hardStop(boolean h){
           mHardStopYeeYeeSolenoid.set(h);
           if(pistonPrints)System.out.println("HardStop solenoid: "+h);
+          
         }
         public void vacRelease(boolean h){
+            h=!h;
          if(h) mVaccuumReleaseSolenoid.set(DoubleSolenoid.Value.kForward);
            else mVaccuumReleaseSolenoid.set(DoubleSolenoid.Value.kOff);
            if(pistonPrints)System.out.println("Vac release solenoid: "+h);

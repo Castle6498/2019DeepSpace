@@ -52,7 +52,7 @@ public interface ControlBoardInterface {
 
     double getWristJog();
 
-    double getSuspensionJog();
+    double getSuspensionClimbJog();
 
     double getSuspensionWheelJog();
 
@@ -70,5 +70,7 @@ public interface ControlBoardInterface {
     void setRumble(double amount);
 
     void rumbleOff();
+
+    double getLiftClimbJog();
 
 }

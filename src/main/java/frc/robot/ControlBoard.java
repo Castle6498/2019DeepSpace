@@ -284,13 +284,13 @@ boolean gear=false;
     }
 
     @Override
-    public double getSuspensionJog() {
+    public double getSuspensionClimbJog() {
         double speed=mDriver.getY(Hand.kRight);
         if(Math.abs(speed)<=.1){
             speed=0;
         }
 
-		speed*=.05;
+		//speed*=.05;
         return -speed;
     }
 
@@ -352,6 +352,17 @@ boolean gear=false;
         setRumble(Controller.Driver, RumbleType.kRightRumble, amount);
         setRumble(Controller.Operator, RumbleType.kLeftRumble, amount);
         setRumble(Controller.Operator, RumbleType.kRightRumble, amount);
+    }
+
+    @Override
+    public double getLiftClimbJog() {
+        double speed=mDriver.getY(Hand.kLeft);
+        if(Math.abs(speed)<=.1){
+            speed=0;
+        }
+
+		//speed*=.05;
+        return speed;
     }
 
    

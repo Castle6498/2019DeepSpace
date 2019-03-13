@@ -8,7 +8,7 @@ import frc.lib.util.DriveSignal;
 import frc.robot.CameraVision.CameraMode;
 import frc.robot.CameraVision.LightMode;
 import frc.robot.CameraVision.StreamMode;
-import frc.robot.auto.AutoModeExecuter;
+
 import frc.robot.loops.Looper;
 import frc.robot.state_machines.BallControlHelper;
 import frc.robot.state_machines.BallControlHelper.CarryHeight;
@@ -49,10 +49,10 @@ public class Robot extends TimedRobot {
     private BallControlHelper mBall = BallControlHelper.getInstance();
     //private Superstructure mSuperstructure = Superstructure.getInstance();
     
-    private AutoModeExecuter mAutoModeExecuter = null;
+
 
     // Create subsystem manager
-    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mDrive,mPlate,mBall,
+    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mPlate,mBall,
     Intake.getInstance(),Lift.getInstance(),Wrist.getInstance(),Suspension.getInstance()));
 
     // Initialize other helper objects
@@ -67,7 +67,7 @@ public class Robot extends TimedRobot {
 
     public void zeroAllSensors() {
         mSubsystemManager.zeroSensors();
-       mDrive.zeroSensors();
+     
     }
 
     /**
@@ -179,17 +179,17 @@ public class Robot extends TimedRobot {
             mBall.jogWrist(mControlBoard.getWristJog());         
         
         //Suspension -----------------------------------------------------------------------------
-             mBall.jogSuspension(mControlBoard.getSuspensionJog());
+            // mBall.jogSuspension(mControlBoard.getSuspensionJog());
             
             mBall.jogSuspensionWheel(mControlBoard.getSuspensionWheelJog());
 
-            if(mControlBoard.getClimbNoLift())mBall.climbNoLift();
+            //if(mControlBoard.getClimbNoLift())mBall.climbNoLift();
 
             if(mControlBoard.getClimbEnable())mBall.climbActivate();
             BallControlHelper.ClimbReadyHeight c = mControlBoard.getClimbHeight();
             if(c!=null)mBall.climbReadyHeight(c);
 
-            
+            mBall.climbJog(mControlBoard.getLiftClimbJog(), mControlBoard.getSuspensionClimbJog());
 
            allPeriodic();
         } catch (Throwable t) {
@@ -203,10 +203,7 @@ public class Robot extends TimedRobot {
         try {
             CrashTracker.logDisabledInit();
 
-            if (mAutoModeExecuter != null) {
-                mAutoModeExecuter.stop();
-            }
-            mAutoModeExecuter = null;
+            
 
             mEnabledLooper.stop();
 

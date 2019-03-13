@@ -199,6 +199,9 @@ private boolean jog=false;
         jog=true;
     }
 
+    public void climbJog(double amount){
+        mRaiseTalon.set(ControlMode.PercentOutput,amount);
+    }
 
    public boolean atPosition(){
       if(Math.abs(mWantedPosition-getPosition())<=Constants.kSuspensionLiftTolerance){

@@ -246,7 +246,7 @@ public class BallControlHelper extends Subsystem {
 
     private boolean climbingEnabled=false;
 
-    enum ClimbStage {Readying, Lifting, LiftingNoLift}
+    enum ClimbStage {Readying, Lifting}
     private ClimbStage climbState=ClimbStage.Readying;
     private boolean climbStateChanged=false;
 
@@ -263,9 +263,6 @@ public class BallControlHelper extends Subsystem {
         break;
         case Lifting:
             newStage = handleClimbLifting();
-        break;
-        case LiftingNoLift:
-            newStage=handleClimbLiftingNoLift();
         break;
     }
 
@@ -285,6 +282,8 @@ public class BallControlHelper extends Subsystem {
                 climbingEnabled=false;
                 cocked=false;
                 mSuspension.setWantedState(Suspension.ControlState.HOMING);
+                mLift.setClimbTuning(false);
+                mWrist.setClimbTuning(false);
             }else{
                 newState=SystemState.CLIMB;
             }
@@ -331,9 +330,10 @@ public class BallControlHelper extends Subsystem {
             mLift.setClimbTuning(true);
             mWrist.setClimbTuning(true);
             System.out.println("climb lifting");
+        
         }
 
-        if(cocked&&Constants.autoClimb){//} || mCurrentClimbHeight != mWantedClimbHeight){
+       /* if(cocked&&Constants.autoClimb){//} || mCurrentClimbHeight != mWantedClimbHeight){
             climbHeightUpdate=false;
             cocked=false;
             switch(mCurrentClimbReadyHeight){
@@ -345,22 +345,12 @@ public class BallControlHelper extends Subsystem {
                     jogSuspension(-Constants.climbMiddleHeight);
                 break;
             }
-        }
+        }*/
+
+
+
         return ClimbStage.Lifting;
         
-    }
-
-    private ClimbStage handleClimbLiftingNoLift(){
-        if(climbStateChanged){
-            mLift.setClimbTuning(false);
-            mWrist.setClimbTuning(false);
-
-            mLift.setWantedState(Lift.ControlState.HOMING);
-            mWrist.setWantedState(Wrist.ControlState.HOMING);
-        }
-
-
-        return ClimbStage.LiftingNoLift;
     }
 
 
@@ -471,23 +461,12 @@ public class BallControlHelper extends Subsystem {
                 climbHeightUpdate=true;
             }
 
-            public void climbNoLift(){
-                mWantedState=SystemState.CLIMB;
-                climbState=ClimbStage.LiftingNoLift;
-                
-            }
+         
 
             public void jogSuspension(double amount){
-                if(climbingEnabled){
+                if(climbingEnabled&&climbState==ClimbStage.Lifting){
                     
-                    if(climbState==ClimbStage.Lifting){
-                       // System.out.println("jog suspension in ball: "+amount);
-                        mSuspension.jog(-amount);
-                        mLift.jog(amount);
-                    }else if(climbState==ClimbStage.LiftingNoLift){
-                        //System.out.println("jog suspension in ball: "+amount);
-                        mSuspension.jog(-amount);             
-                    }
+                   mSuspension.jog(amount);
                 }
             }
 
@@ -498,16 +477,22 @@ public class BallControlHelper extends Subsystem {
                 }
             }
 
-
+            public void climbJog(double lift, double suspension){
+                if(climbingEnabled&&climbState==ClimbStage.Lifting){
+                mLift.climbJog(-lift);
+                mSuspension.climbJog(-suspension);
+                }
+            }
 
 
     //Jog Commands
         public void jogLift(double amount){
            if(!climbingEnabled) mLift.jog(amount);
+           
         }
 
         public void jogWrist(double amount){
-            if(!climbingEnabled) mWrist.jog(amount);
+             mWrist.jog(amount);
         }
 
        

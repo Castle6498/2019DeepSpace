@@ -184,7 +184,9 @@ public class Lift extends Subsystem {
     }
 
    
-    
+    public void climbJog(double amount){
+        mTalon.set(ControlMode.PercentOutput,amount);
+    }
 
     //CLOSED LOOP CONTROL
     private double mWantedPosition = .1;
