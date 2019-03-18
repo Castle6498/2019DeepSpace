@@ -121,7 +121,7 @@ public class Constants extends ConstantsBase {
             public static final double suspFloorPos = 1.25;
 
         //Cimb Lift
-            public static final double kLiftClimbP=3;//1
+            public static final double kLiftClimbP=0;//1
             public static final double kLiftClimbI=0;
             public static final double kLiftClimbD=0;
 
@@ -133,7 +133,7 @@ public class Constants extends ConstantsBase {
 
         //Climb Suspension
             public static final int kSuspensionBackLiftTalonID=4;
-                public static final double kSuspensionBackLiftTalonP=5;//.1
+                public static final double kSuspensionBackLiftTalonP=3;//.1
                 public static final double kSuspensionBackLiftTalonI=0;
                 public static final double kSuspensionBackLiftTalonD=0;
                 public static final double kSuspensionMaxSpeedClimb=94000;//96000;
