@@ -182,8 +182,8 @@ public class ClimbingHelper extends Subsystem {
                 else return SystemState.PRECLIMB;
             case IDLE:
             case HOME:
+            case STOW: //Its fine to go to stow from pre climb
                 return mWantedState;
-            case STOW:
             case PRECLIMB:
             default:
                 return SystemState.PRECLIMB;
