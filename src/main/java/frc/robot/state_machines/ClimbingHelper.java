@@ -356,6 +356,8 @@ public class ClimbingHelper extends Subsystem {
         @Override
         public void stop() {
             mSuspension.setWantedState(Suspension.ControlState.IDLE);
+            setClimbTuning(false);
+            setVerticalJogMode(VerticalJogMode.DISABLED);
         }
 
         @Override
