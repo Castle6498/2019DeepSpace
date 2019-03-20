@@ -33,7 +33,7 @@ public class Suspension extends Subsystem {
         return sInstance;
     }
 
-    private TalonSRX mRaiseTalon, mWheelTalon;
+    private TalonSRX mRaiseTalon;
    
     public Suspension() {
         
@@ -52,17 +52,6 @@ public class Suspension extends Subsystem {
 
         mRaiseTalon.configMotionCruiseVelocity((int) Math.round((Constants.kSuspensionVelocity*Constants.kSuspensionLiftTicksPerInch)/(10)));
         mRaiseTalon.configMotionAcceleration((int) Math.round((Constants.kSuspensionAcceleration*Constants.kSuspensionLiftTicksPerInch)/(10)));
-   
-
-        //Wheel Talon
-        mWheelTalon = CANTalonFactory.createTalon(Constants.kSuspensionWheelTalonID, 
-        true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, false);
-
-        mWheelTalon = CANTalonFactory.setupHardLimits(mWheelTalon, LimitSwitchSource.Deactivated,
-        LimitSwitchNormal.Disabled, false, LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled,false);
-        
-        mWheelTalon = CANTalonFactory.setupSoftLimits(mWheelTalon, false, 0,
-        false, 0);
 
        
     }
@@ -90,7 +79,6 @@ public class Suspension extends Subsystem {
                 mControlState = ControlState.IDLE;
                 mStateChanged = true;
                 mCurrentStateStartTime = timestamp;
-                mWheelTalon.setSelectedSensorPosition(0);
             }
         }
 
@@ -117,7 +105,6 @@ public class Suspension extends Subsystem {
                     mStateChanged = false;
                 }
                 positionUpdater();
-                positionWheelUpdater();
             }
         }
 
@@ -229,53 +216,10 @@ private boolean jog=false;
 
 
 
-//WHEEL ___________________________________________________________
 
-private double mWantedWheelPosition = 0;
-    private double mTravelingWheelPosition = 0.1;
-    
-    public synchronized void setWheel(double m){
-        mWheelTalon.set(ControlMode.PercentOutput,m);
-    }
-
-
-    public synchronized void setWheelPosition(double pos){      
-        mWantedWheelPosition=pos;
-    }
-
-    private boolean jogWheel;
-    public void jogWheel(double amount){
-        setWheelPosition(mWantedWheelPosition+=amount);
-        jog=true;
-    }
-
-
-   public boolean atWheelPosition(){
-      if(Math.abs(mWantedWheelPosition-getPosition())<=Constants.kSuspensionWheelTolerance){
-          return true;
-      }else{
-          return false;
-      }
-       
-   }
-
-   public double getWheelPosition(){
-       return mWheelTalon.getSelectedSensorPosition()/Constants.kSuspensionWheelTicksPerInch;
-   }
-
-   private void positionWheelUpdater(){
-           
-    if(mWantedWheelPosition!=mTravelingWheelPosition){
-        if(!jogWheel) System.out.println("Suspension wheel to "+mTravelingWheelPosition+ " Position now: "+getWheelPosition());
-        mTravelingWheelPosition=mWantedWheelPosition;
-        mWheelTalon.set(ControlMode.Position, mTravelingWheelPosition*Constants.kSuspensionWheelTicksPerInch);
-        jog=false;
-    }
-}
   
    private synchronized void stopMotor(){
         mRaiseTalon.set(ControlMode.Disabled,0);
-        mWheelTalon.set(ControlMode.Disabled, 0);
     }
 
     public synchronized void setWantedState(ControlState state) {

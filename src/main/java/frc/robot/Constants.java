@@ -8,36 +8,7 @@ import frc.lib.util.ConstantsBase;
  */
 public class Constants extends ConstantsBase {
     public static double kLooperDt = 0.005;
-
     
-  
-
-         
-    
-   
-
-       
-        
-       
-
-       
-
-    
-    //Autonomous
-        public static final double climbReadyMiddleHeight=12;
-        public static final double climbReadyMiddleWristAngle=220;
-
-        public static final double climbReadyHighHeight=20.5;
-        public static final double climbReadyHighWristAngle=220;
-
-        public static final double climbMiddleHeight=climbReadyMiddleHeight;        
-
-        public static final double climbHighHeight=climbReadyHighHeight;
-
-        public static final boolean autoClimb=true;
-        
-
-
        
     // Drive
          //Talon
@@ -132,27 +103,54 @@ public class Constants extends ConstantsBase {
         public static final double kWristTolerance = .5;
 
         public static final double kWristMaxOutput=.6;
+
+
+
     //CLIMBING CONTROLS --------------------------------------------
-
-        public static final double kWristClimbP=18;//10
-        public static final double kWristClimbI=0;
-        public static final double kWristClimbD=0;
-        public static final double kWristClimbF=0;
-
-        public static final double kLiftClimbP=3;//1
-        public static final double kLiftClimbI=0;
-        public static final double kLiftClimbD=0;
-
-        public static final double kLiftMaxSpeedClimb=1800;//1800
-        public static final double kLiftClimbF=(1.0*1023)/kLiftMaxSpeedClimb;
-
-        public static final double kLiftClimbVelocity=.5;   
-        public static final double kLiftClimbAcceleration=.5; 
-
-
         
-      
+        //Distances
+            public static final double climbWristAngle=220;
 
+            public static final double preClimbMiddleHeight=12;
+            public static final double preClimbHighHeight=20.5;
+
+            public static final double suspClimbOffset=1;
+
+            public static final double liftClimbSetPoint=0;
+
+            public static final double suspFloorPos = 1.25;
+
+        //Cimb Lift
+            public static final double kLiftClimbP=3;//1
+            public static final double kLiftClimbI=0;
+            public static final double kLiftClimbD=0;
+
+            public static final double kLiftMaxSpeedClimb=1800;//1800
+            public static final double kLiftClimbF=(1.0*1023)/kLiftMaxSpeedClimb;
+
+            public static final double kLiftClimbVelocity=.5;   
+            public static final double kLiftClimbAcceleration=.5; 
+
+        //Climb Suspension
+            public static final int kSuspensionBackLiftTalonID=4;
+                public static final double kSuspensionBackLiftTalonP=5;//.1
+                public static final double kSuspensionBackLiftTalonI=0;
+                public static final double kSuspensionBackLiftTalonD=0;
+                public static final double kSuspensionMaxSpeedClimb=94000;//96000;
+                public static final double kSuspensionBackLiftF=(1.0*1023)/kSuspensionMaxSpeedClimb;
+
+                public static final double kSuspensionVelocity=3;//10;   
+                public static final double kSuspensionAcceleration=3; 
+
+            public static final double kSuspensionLiftTicksPerInch=(1024*4)*4*16; //added hopefully from test pannel testing
+            public static final int kSuspensionLiftSoftLimit=21; 
+            public static final double kSuspensionLiftTolerance =.5;
+      
+        //Climb Wrist
+            public static final double kWristClimbP=18;//10
+            public static final double kWristClimbI=0;
+            public static final double kWristClimbD=0;
+            public static final double kWristClimbF=0;
 
 
     //Lift -----------------------------------------------------------
@@ -173,37 +171,7 @@ public class Constants extends ConstantsBase {
         public static final double kLiftSoftLimit=34; 
 
         public static final double kLiftTolerance = .5;
-
-    //Suspension -----------------------------------------------------------
         
-        //Talon
-        public static final int kSuspensionBackLiftTalonID=4;
-            public static final double kSuspensionBackLiftTalonP=5;//.1
-            public static final double kSuspensionBackLiftTalonI=0;
-            public static final double kSuspensionBackLiftTalonD=0;
-            public static final double kSuspensionMaxSpeedClimb=90000;//96000;
-        public static final double kSuspensionBackLiftF=(1.0*1023)/kSuspensionMaxSpeedClimb;
-
-        public static final double kSuspensionVelocity=10;   
-        public static final double kSuspensionAcceleration=2; 
-        
-
-            
-
-        public static final double kSuspensionLiftTicksPerInch=(1024*4)*4*16; //added hopefully from test pannel testing
-        public static final int kSuspensionLiftSoftLimit=21; 
-        public static final double kSuspensionLiftTolerance =.5;
-
-        public static final int kSuspensionWheelTalonID=6;
-            public static final double kSuspensionWheelTalonP=30;
-            public static final double kSuspensionWheelTalonI=0;
-            public static final double kSuspensionWheelTalonD=0;
-            public static final double kSuspensionWheelTalonF=0;
-
-
-            public static final double kSuspensionWheelTicksPerInch=1680/(2.24*Math.PI); 
-            public static final double kSuspensionWheelTolerance = .1;
-    
     //PlateCenter -----------------------------------------------------------
     
         //Talon

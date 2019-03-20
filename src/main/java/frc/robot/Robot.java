@@ -11,6 +11,7 @@ import frc.robot.CameraVision.StreamMode;
 
 import frc.robot.loops.Looper;
 import frc.robot.state_machines.BallControlHelper;
+import frc.robot.state_machines.ClimbingHelper;
 import frc.robot.state_machines.BallControlHelper.CarryHeight;
 import frc.robot.state_machines.BallControlHelper.PickUpHeight;
 import frc.robot.state_machines.BallControlHelper.ShootHeight;
@@ -47,12 +48,13 @@ public class Robot extends TimedRobot {
     private Drive mDrive = Drive.getInstance();
     private PlateCenter mPlate = PlateCenter.getInstance();
     private BallControlHelper mBall = BallControlHelper.getInstance();
-    //private Superstructure mSuperstructure = Superstructure.getInstance();
+    private ClimbingHelper mClimbingHelper = ClimbingHelper.getInstance();
+    
     
 
 
     // Create subsystem manager
-    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mPlate,mBall,
+    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mPlate,mBall,mClimbingHelper,
     Intake.getInstance(),Lift.getInstance(),Wrist.getInstance(),Suspension.getInstance()));
 
     // Initialize other helper objects
@@ -113,6 +115,7 @@ public class Robot extends TimedRobot {
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mBall.setWantedState(BallControlHelper.SystemState.HOME);
             mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+            mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
             
             CameraVision.setLedMode(LightMode.eOff);
             CameraVision.setCameraMode(CameraMode.eVision);
@@ -178,18 +181,19 @@ public class Robot extends TimedRobot {
         
             mBall.jogWrist(mControlBoard.getWristJog());         
         
-        //Suspension -----------------------------------------------------------------------------
-            // mBall.jogSuspension(mControlBoard.getSuspensionJog());
+        //CLIMBING -----------------------------------------------------------------------------
             
-            mBall.jogSuspensionWheel(mControlBoard.getSuspensionWheelJog());
+            if(mControlBoard.getSuspensionHome())mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
+            
+            ClimbingHelper.PreClimbHeight h = mControlBoard.getPreClimbHeight();
+            if(h!=null)mClimbingHelper.preClimb(h);
 
-            //if(mControlBoard.getClimbNoLift())mBall.climbNoLift();
-
-            if(mControlBoard.getClimbEnable())mBall.climbActivate();
-            BallControlHelper.ClimbReadyHeight c = mControlBoard.getClimbHeight();
-            if(c!=null)mBall.climbReadyHeight(c);
-
-            mBall.climbJog(mControlBoard.getLiftClimbJog(), mControlBoard.getSuspensionClimbJog());
+            if(mControlBoard.getClimbLift())mClimbingHelper.setWantedState(ClimbingHelper.SystemState.LIFT);
+            else if(mControlBoard.getClimbStow())mClimbingHelper.setWantedState(ClimbingHelper.SystemState.STOW);
+        
+            mClimbingHelper.setFullBlast(mControlBoard.getClimbFullBlast());
+        
+            
 
            allPeriodic();
         } catch (Throwable t) {

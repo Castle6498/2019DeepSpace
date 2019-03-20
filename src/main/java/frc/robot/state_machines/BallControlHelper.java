@@ -42,7 +42,7 @@ public class BallControlHelper extends Subsystem {
     private final Lift mLift = Lift.getInstance();
     private final Intake mIntake = Intake.getInstance();
     private final Wrist mWrist = Wrist.getInstance();
-    public final Suspension mSuspension = Suspension.getInstance();
+    private final ClimbingHelper mClimbingHelper = ClimbingHelper.getInstance();
 
     // Intenal state of the system
     public enum SystemState {
@@ -117,6 +117,7 @@ public class BallControlHelper extends Subsystem {
                 } else {
                     mStateChanged = false;
                 }
+                climbUpdater();
             }
         }
 
@@ -242,135 +243,37 @@ public class BallControlHelper extends Subsystem {
         return mWantedState;
     }
 
+   private void climbUpdater(){
+        if(mClimbingHelper.getClimbing()) {
+            setWantedState(SystemState.CLIMB);
+        }
+   }
    
-
-    private boolean climbingEnabled=false;
-
-    enum ClimbStage {Readying, Lifting}
-    private ClimbStage climbState=ClimbStage.Readying;
-    private boolean climbStateChanged=false;
-
     private SystemState handleClimb() {
         if(mStateChanged){
             mIntake.setWantedState(Intake.SystemState.IDLE);
-            climbingEnabled=true;
-        }
-        
-        ClimbStage newStage = climbState;
-        switch(climbState){
-        case Readying:
-            newStage = handleClimbReadying();
-        break;
-        case Lifting:
-            newStage = handleClimbLifting();
-        break;
-    }
-
-    if(newStage!=climbState){
-        climbState=newStage;
-        climbStateChanged=true;
-        System.out.println("Climb State: "+climbState);
-    }else climbStateChanged=false;
-
-    
-
-
-        SystemState newState = mWantedState;
-
-        if(newState!=SystemState.CLIMB){
-            if(mSuspension.getPosition()<.1){
-                climbingEnabled=false;
-                cocked=false;
-                mSuspension.setWantedState(Suspension.ControlState.HOMING);
-                mLift.setClimbTuning(false);
-                mWrist.setClimbTuning(false);
-            }else{
-                newState=SystemState.CLIMB;
-            }
-        }
-
-        return newState;
-    }
-
-
-    private ClimbReadyHeight mWantedReadyClimbHeight = ClimbReadyHeight.HIGH;
-    private ClimbReadyHeight mCurrentClimbReadyHeight = ClimbReadyHeight.HIGH;
-    boolean climbReadyHeightUpdate = false;
-    boolean cocked=false;
-    private ClimbStage handleClimbReadying(){
-        if(climbStateChanged){
-            mLift.setClimbTuning(false);
-            mWrist.setClimbTuning(false);
-        }
-
-        if(climbReadyHeightUpdate||climbStateChanged){//} || mCurrentClimbHeight != mWantedClimbHeight){
-            climbReadyHeightUpdate=false;
-            mCurrentClimbReadyHeight=mWantedReadyClimbHeight;
             
-            switch(mCurrentClimbReadyHeight){
-                case HIGH:
-                    mLift.setPosition(Constants.climbReadyHighHeight);
-                    mWrist.setPosition(-Constants.climbReadyHighWristAngle);
-                    cocked=true;
-                break;
-                case MIDDLE:
-                    mLift.setPosition(Constants.climbReadyMiddleHeight);
-                    mWrist.setPosition(-Constants.climbReadyMiddleWristAngle);
-                    cocked=true;
-                break;
-            }
         }
-        return ClimbStage.Readying;
-    }
-
-   
-    boolean climbHeightUpdate = false;
-    private ClimbStage handleClimbLifting(){
-        if(climbStateChanged){
-            mLift.setClimbTuning(true);
-            mWrist.setClimbTuning(true);
-            System.out.println("climb lifting");
         
+
+        switch(mWantedState){
+            case CLIMB:
+                return SystemState.CLIMB;
+            case  IDLE:
+            case  PICKUPBALL:
+            case SHOOTBALLPOSITION:
+            case SHOOT:
+            case CARRYBALL:
+            case HOME:
+            default:
+                if(mClimbingHelper.getClimbing()){
+                    mClimbingHelper.setWantedState(ClimbingHelper.SystemState.IDLE);
+                    return SystemState.CLIMB;
+                }else{
+                    return mWantedState;
+                }
         }
-
-       /* if(cocked&&Constants.autoClimb){//} || mCurrentClimbHeight != mWantedClimbHeight){
-            climbHeightUpdate=false;
-            cocked=false;
-            switch(mCurrentClimbReadyHeight){
-                case HIGH:
-                    jogSuspension(-Constants.climbHighHeight);
-                    System.out.println("high down");
-                break;
-                case MIDDLE:
-                    jogSuspension(-Constants.climbMiddleHeight);
-                break;
-            }
-        }*/
-
-
-
-        return ClimbStage.Lifting;
-        
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private double startedAt=0;
@@ -396,7 +299,6 @@ public class BallControlHelper extends Subsystem {
        if(mStateChanged){
            mLift.setWantedState(Lift.ControlState.HOMING);
            mWrist.setWantedState(Wrist.ControlState.HOMING);
-           mSuspension.setWantedState(Suspension.ControlState.HOMING);
        }
 
         //return mWantedState;
@@ -441,63 +343,17 @@ public class BallControlHelper extends Subsystem {
             mWantedCarryHeight=mode;
             carryBallUpdate=true;
         }
-//####################################################################################################################
-        //Climb
-            public enum ClimbReadyHeight{
-                MIDDLE,
-                HIGH
-            }
-            public void climbReadyHeight(ClimbReadyHeight mode){
-                mWantedState=SystemState.CLIMB;
-                climbState=ClimbStage.Readying;
-                mWantedReadyClimbHeight=mode;
-                climbReadyHeightUpdate=true;
-            }
-
-            
-            public void climbActivate(){
-                mWantedState=SystemState.CLIMB;
-                climbState=ClimbStage.Lifting;
-                climbHeightUpdate=true;
-            }
-
-         
-
-            public void jogSuspension(double amount){
-                if(climbingEnabled&&climbState==ClimbStage.Lifting){
-                    
-                   mSuspension.jog(amount);
-                }
-            }
-
-            public void jogSuspensionWheel(double amount){
-                if(climbingEnabled){
-                    mSuspension.setWheel(amount);
-                    mIntake.setMotor(amount);
-                }
-            }
-
-            public void climbJog(double lift, double suspension){
-                if(climbingEnabled&&climbState==ClimbStage.Lifting){
-                mLift.climbJog(-lift);
-                mSuspension.climbJog(-suspension);
-                }
-            }
 
 
     //Jog Commands
         public void jogLift(double amount){
-           if(!climbingEnabled) mLift.jog(amount);
+           if(!mClimbingHelper.getClimbing()) mLift.jog(amount);
            
         }
 
         public void jogWrist(double amount){
-             mWrist.jog(amount);
+            if(!mClimbingHelper.getClimbing()) mWrist.jog(amount);
         }
-
-       
-
-   
 
   
     //BORRING Stupid stuff needed :(
