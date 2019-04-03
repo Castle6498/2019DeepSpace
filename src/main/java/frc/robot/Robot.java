@@ -152,6 +152,12 @@ public class Robot extends TimedRobot {
 
             mDrive.setOpenLoop(mControlBoard.getDriveSignal());
             mDrive.lowGear(mControlBoard.getLowGear());
+
+            mDrive.drivePeriodic();
+
+            mDrive.profileEnable(mControlBoard.enableMotionProfile());
+
+            mDrive.holdMotionProile(mControlBoard.holdMotionProfile());
           
         //PLATE -------------------------------------------------------------------------------------
 
@@ -160,9 +166,11 @@ public class Robot extends TimedRobot {
             else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
             else if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
         
-            mPlate.hardStop(mControlBoard.getHatchHardStops());
+            mPlate.deployHardStop(mControlBoard.getHatchHardStops());
 
             mPlate.jog(mControlBoard.getHatchPanelJog());
+
+           // System.out.println("Plate Wall: "+mPlate.getWall());
 
 
         //BALL -----------------------------------------------------------------------------------
@@ -193,7 +201,13 @@ public class Robot extends TimedRobot {
         
             mClimbingHelper.setFullBlast(mControlBoard.getClimbFullBlast());
         
-            
+            mClimbingHelper.setVerticalJog(mControlBoard.getClimbVerticleJog());
+            mClimbingHelper.setHorizontalJog(mControlBoard.getClimbHorizontalJog());
+
+
+       
+           
+
 
            allPeriodic();
         } catch (Throwable t) {
@@ -207,7 +221,7 @@ public class Robot extends TimedRobot {
         try {
             CrashTracker.logDisabledInit();
 
-            
+            mDrive.stop();
 
             mEnabledLooper.stop();
 

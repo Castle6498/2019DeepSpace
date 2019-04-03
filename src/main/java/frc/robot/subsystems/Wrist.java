@@ -62,7 +62,7 @@ public class Wrist extends Subsystem {
         mTalonChild.setInverted(true);
         mTalonChild.follow(mTalon);
         
-        
+        System.out.println("wrist initialized");
        
     }
 
@@ -218,6 +218,7 @@ private void positionUpdater(){
 if(hasHomed&&mWantedPosition!=mTravelingPosition){
 
     mTravelingPosition=mWantedPosition;
+    jog=false;
     if(!jog) System.out.println("Wrist to "+mTravelingPosition+ " Position now: "+getPosition());
     mTalon.set(ControlMode.Position, mTravelingPosition*Constants.kWristTicksPerDeg);
     jog=false;

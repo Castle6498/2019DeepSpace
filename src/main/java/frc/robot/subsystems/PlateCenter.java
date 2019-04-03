@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Ultrasonic;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 import frc.robot.CameraVision;
 import frc.robot.Constants;
@@ -21,6 +21,7 @@ import frc.robot.ControlBoardInterface;
 import frc.robot.CameraVision.CameraMode;
 import frc.robot.CameraVision.LightMode;
 import frc.robot.ControlBoardInterface.Controller;
+import frc.robot.ControlBoardInterface.RumbleSide;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 
@@ -47,10 +48,10 @@ public class PlateCenter extends Subsystem {
     }
 
     private TalonSRX mBeltTalon;
-    private final Solenoid mSuckSolenoid, mHardStopYeeYeeSolenoid;
-    private final DoubleSolenoid mDeploySolenoid, mVaccuumReleaseSolenoid;
+    private final Solenoid mHardStopYeeYeeSolenoid;
+    private final DoubleSolenoid mDeploySolenoid, mOneWayHardStopSolenoid;
   
-    DigitalInput mLidar;
+    DigitalInput mEdgeDetector, mWallDetector;
 
    // Ultrasonic mUltra;
 
@@ -75,17 +76,20 @@ public class PlateCenter extends Subsystem {
             mBeltTalon = CANTalonFactory.tuneLoops(mBeltTalon, 0, Constants.kPlateCenterTalonP,
             Constants.kPlateCenterTalonI, Constants.kPlateCenterTalonD, Constants.kPlateCenterTalonF);
   
-        //LIDAR
-            mLidar = new DigitalInput(Constants.kPlateCenterLidar);
+        //Photoelectric
+            mEdgeDetector = new DigitalInput(Constants.kPlateCenterEdgeFinderPort);
+
+            mWallDetector = new DigitalInput(Constants.kPlateCenterWallDetectorPort);
 
         //ULTRA
           //  mUltra = new Ultrasonic(Constants.kPlateCenterUltraPort[0], Constants.kPlateCenterUltraPort[1]);
            
         //Pneumatics        
-            mSuckSolenoid = new Solenoid(Constants.kPlateCenterSuckSolenoidPort);
+           
             mDeploySolenoid = new DoubleSolenoid(Constants.kPlateCenterDeploySolenoidPort[0],Constants.kPlateCenterDeploySolenoidPort[1]);
             mHardStopYeeYeeSolenoid = new Solenoid(Constants.kPlateCenterHardStopYeeYeeSolenoidPort);
-            mVaccuumReleaseSolenoid = new DoubleSolenoid(Constants.kPlateVaccuumReleaseSolenoidPort[0],Constants.kPlateVaccuumReleaseSolenoidPort[1]);
+            
+            mOneWayHardStopSolenoid = new DoubleSolenoid(Constants.kPlateHardStopOneWaySolenoidPort[0],Constants.kPlateHardStopOneWaySolenoidPort[1]);
 
 
             compressor = new Compressor();
@@ -156,6 +160,7 @@ public class PlateCenter extends Subsystem {
                     mStateChanged = false;
                 }
                 if(hasHomed)positionUpdater();
+                hardStopUpdater(timestamp);
             }
           //  System.out.println("Plate Loop");
         }
@@ -194,11 +199,11 @@ public class PlateCenter extends Subsystem {
         if(mStateChanged){
             hasHomed=false;
             setLimitClear(true);
-            mBeltTalon.set(ControlMode.PercentOutput,-.7);
+            mBeltTalon.set(ControlMode.PercentOutput,-.9);
             mBeltTalon.setSelectedSensorPosition(-500);
         }
 
-        if((now-startedAt)>3.25) {
+        if((now-startedAt)>3) {
             System.out.println("plate reset triggered");
             stopMotor();
             return SystemState.IDLE;
@@ -243,12 +248,14 @@ public class PlateCenter extends Subsystem {
            centeringState = CenteringState.FARLIMIT;
            plateCentered=false;
            mTravelingSetPosition=.1;
-           hardStop(false);
-           vacRelease(true);
-           suck(true);
+           //deployHardStop(false);
+          // vacRelease(true);
+          // suck(true);
+
+          mControlBoard.setRumble(Controller.Operator, RumbleSide.both, .5);
        }    
        
-     // System.out.println("Lidar: "+getLidar()+ " State: "+centeringState);
+     // System.out.println("Lidar: "+getEdge()+ " State: "+centeringState);
 
        switch(centeringState){
            case FARLIMIT:
@@ -258,7 +265,7 @@ public class PlateCenter extends Subsystem {
            }
            break;
            case SENSE:
-               if(getLidar()){
+               if(getEdge()){
                    stopMotor();
                    inchesToCenter = getPosition() - Constants.kPlateCenterTalonSoftLimit/2; 
                    System.out.println("centered succesfully, inches to center: "+inchesToCenter);
@@ -272,16 +279,23 @@ public class PlateCenter extends Subsystem {
            break;
        }
 
-       if(mWantedState!=SystemState.CENTERING){
-           stopMotor();
-           centeringState=CenteringState.DONE;
-       }
+       
+       SystemState newState=SystemState.CENTERING;
+
 
        if(centeringState==CenteringState.DONE){
-           hardStop(true);
-           return defaultIdleTest(); 
-       }
-       else return mWantedState;
+          // deployHardStop(true);
+          mControlBoard.rumbleOff();
+           newState= defaultIdleTest(); 
+       } else if(mWantedState == SystemState.HOMING) newState=SystemState.HOMING;
+     
+
+       if(newState!=SystemState.CENTERING){
+        stopMotor();
+        centeringState=CenteringState.DONE;
+        }
+
+        return newState;
    }
     
    enum PlateDeployState {VacOn, Suck, Push, vacOff, Retract, FinalReset, Done}
@@ -297,7 +311,7 @@ public class PlateCenter extends Subsystem {
            System.out.println("Deploying Plate");  
             deployState= PlateDeployState.VacOn;
             lastStateStart=now;
-           
+           mControlBoard.setRumble(Controller.Driver, RumbleSide.both, .5);
         }
 
 
@@ -307,44 +321,44 @@ public class PlateCenter extends Subsystem {
         PlateDeployState newState=deployState;
         switch(deployState){
             case VacOn:
-                vacRelease(true);
+                //vacRelease(true);
                 push(false);
                 if(deployUpdate(Constants.kPlateCenterDeployPauses[0])) 
                     newState = PlateDeployState.Suck;
             break;
             case Suck: 
-                vacRelease(true);
-                suck(true);
+                //vacRelease(true);
+                //suck(true);
                 push(false);
                 if(deployUpdate(Constants.kPlateCenterDeployPauses[1])) 
                     newState = PlateDeployState.Push;
             break;
             case Push: 
-                vacRelease(true);
-                suck(true);
+                //vacRelease(true);
+               // suck(true);
                 push(true);
                 if(deployUpdate(Constants.kPlateCenterDeployPauses[2])) 
                     newState = PlateDeployState.vacOff;
             break;
             case vacOff: 
-                vacRelease(false);
-                suck(false);
+               // vacRelease(false);
+               // suck(false);
                 push(true);
                 if(deployUpdate(Constants.kPlateCenterDeployPauses[3])) 
                     newState = PlateDeployState.Retract;
             break;
             case Retract:
-                vacRelease(false);
-                suck(false);
+               // vacRelease(false);
+               // suck(false);
                 push(false);
                 if(deployUpdate(Constants.kPlateCenterDeployPauses[4])) 
                     newState = PlateDeployState.FinalReset;
             break;
             case FinalReset:
-                vacRelease(false);
-                suck(false);
+                //vacRelease(false);
+                //suck(false);
                 push(false);
-                hardStop(false);
+              //  deployHardStop(false);
                 setPosition(Constants.kPlateCenterTalonSoftLimit/2);
                 if(deployUpdate(Constants.kPlateCenterDeployPauses[5])) 
                     newState = PlateDeployState.Done;
@@ -359,6 +373,7 @@ public class PlateCenter extends Subsystem {
         }
 
         if(deployState==PlateDeployState.Done){
+           mControlBoard.rumbleOff();
             return defaultIdleTest();
         }
         
@@ -386,12 +401,12 @@ double counter = 0;
 
 
             //d = (h2-h1) / tan(a1+a2)
-            double distance = (Constants.kLimeCameraHeight-Constants.kLimeTargetHeight)/
-                Math.tan(Math.toRadians(Constants.kLimeCameraAngleFromHorizontal+CameraVision.getTy()));
+          //  double distance = (Constants.kLimeCameraHeight-Constants.kLimeTargetHeight)/
+           //     Math.tan(Math.toRadians(Constants.kLimeCameraAngleFromHorizontal+CameraVision.getTy()));
            
-            double rumble = 1-(distance/Constants.kLimeTriggerDistance);
+           // double rumble = 1-(distance/Constants.kLimeTriggerDistance);
            
-           if(counter%15==0) mControlBoard.setRumble(rumble);
+           //if(counter%15==0) mControlBoard.setRumble(rumble);
            counter++;
             
             //Find the offset of target from camera with 0 at middle
@@ -408,7 +423,7 @@ double counter = 0;
             
 
             if(!CameraVision.isTarget()||now-startStartedAt<=Constants.kLimeLightTargetPause)ready=false;
-            else if(counter%3==0)setPosition(target);
+            else if(counter%1==0)setPosition(target);
 
 
 
@@ -417,8 +432,11 @@ double counter = 0;
 
             SystemState newState=mWantedState;
 
-            if(ready&&Constants.kLimeLightAutoDeploy) newState = SystemState.DEPLOYINGPLATE;
-           
+            if(ready&&Constants.kLimeLightAutoDeploy&&getWall()){
+                System.out.println("AUTO DEPLOY FOR YEETING OTHER TEAMS");
+             newState = SystemState.DEPLOYINGPLATE;
+             mWantedState=SystemState.DEPLOYINGPLATE;
+            }
 
 
             if(newState != SystemState.AUTOALIGNING){
@@ -480,8 +498,12 @@ double counter = 0;
         }
 
     //Sensors
-        public boolean getLidar(){
-            return mLidar.get();
+        public boolean getEdge(){
+            return mEdgeDetector.get();
+        }
+
+        public boolean getWall(){
+            return mWallDetector.get();
         }
 
        
@@ -489,33 +511,63 @@ double counter = 0;
     //Pneumatic Controls
         boolean pistonPrints = false;
 
-        private void suck(boolean s){
-           mSuckSolenoid.set(!s);
-          if(pistonPrints) System.out.println("Suck solenoid: "+s);
-        }
+       
         private void push(boolean p){
             if(p) mDeploySolenoid.set(DoubleSolenoid.Value.kForward);
             else mDeploySolenoid.set(DoubleSolenoid.Value.kReverse);
             if(pistonPrints)System.out.println("Push solenoid: "+p);
         }
-        public void hardStop(boolean h){
+        private void hardStop(boolean h){
           mHardStopYeeYeeSolenoid.set(h);
           if(pistonPrints)System.out.println("HardStop solenoid: "+h);
           
         }
-        public void vacRelease(boolean h){
-            h=!h;
-         if(h) mVaccuumReleaseSolenoid.set(DoubleSolenoid.Value.kForward);
-           else mVaccuumReleaseSolenoid.set(DoubleSolenoid.Value.kOff);
-           if(pistonPrints)System.out.println("Vac release solenoid: "+h);
+        private void hardStopOneWay(boolean h){
+            //h=!h;
+            if(h) mOneWayHardStopSolenoid.set(DoubleSolenoid.Value.kForward);
+            else mOneWayHardStopSolenoid.set(DoubleSolenoid.Value.kReverse);
+            if(pistonPrints)System.out.println("Hard Stop One Way solenoid: "+h);
           }
 
+          double updateStart=0;
+        private void hardStopUpdater(double now){
+            if(hardStopChanged){
+                if(hardStop){
+                    if(updateStart==0){
+                        updateStart=now;
+                        System.out.println("hard stop start: "+updateStart);
+                    }
+                    hardStop(true);
+                    if(now-updateStart>=Constants.kPlateCenterHardStopPause){
+                        hardStopOneWay(true);
+                        hardStopChanged=false;
+                        System.out.println("hard stop done at: "+now);
+                        updateStart=0;
+                    }
+
+
+                }else{
+                    hardStop(false);
+                    hardStopOneWay(false);
+                    hardStopChanged=false;
+                }
+            }
+        }
+
+        boolean hardStop = false;
+        boolean hardStopChanged=false;
+        public void deployHardStop(boolean d){
+            if(d!=hardStop)hardStopChanged=true;
+            
+            hardStop=d;
+        }
 
         private void resetPistons(){
-            hardStop(false);
-            suck(false);
+           
+           
             push(false);
-            vacRelease(false);
+           hardStop(false);
+           hardStopOneWay(false);
         }
 
     //Boring Stuff

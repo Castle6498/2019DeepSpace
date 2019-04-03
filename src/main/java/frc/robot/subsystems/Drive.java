@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motion.SetValueMotionProfile;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
@@ -10,7 +11,9 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
-
+import frc.robot.motion_profile.GeneratedMotionProfileLeft;
+import frc.robot.motion_profile.GeneratedMotionProfileRight;
+import frc.robot.motion_profile.MotionProfileHelper;
 import frc.lib.util.DriveSignal;
 import frc.lib.util.drivers.Talon.CANTalonFactory;
 
@@ -39,6 +42,8 @@ public class Drive {
     private TalonSRX mLeftMaster, mRightMaster;
     private VictorSPX mLeftSlave, mRightSlave;
    
+    MotionProfileHelper _leftProfileController;
+    MotionProfileHelper _rightProfileController;
     
     //private final NavX mNavXBoard;
 
@@ -86,12 +91,76 @@ public class Drive {
         
         //mNavXBoard = new NavX(SPI.Port.kMXP);
 
+
+         _leftProfileController = new MotionProfileHelper(mLeftMaster,GeneratedMotionProfileLeft.Points, GeneratedMotionProfileLeft.kNumPoints,true);
+         _rightProfileController = new MotionProfileHelper(mRightMaster,GeneratedMotionProfileRight.Points, GeneratedMotionProfileRight.kNumPoints,false);
       
     }
 
-   
 
    
+
+   public void drivePeriodic(){
+
+
+    _leftProfileController.control();
+    _rightProfileController.control();
+
+    if(profileEnable){
+        SetValueMotionProfile setOutputL = _leftProfileController.getSetValue();
+        SetValueMotionProfile setOutputR = _rightProfileController.getSetValue();
+
+        if(hold) {
+            setOutputL=SetValueMotionProfile.Hold;
+            setOutputR=SetValueMotionProfile.Hold;
+        }
+					
+      mLeftMaster.set(ControlMode.MotionProfile,setOutputL.value);
+
+      
+      mRightMaster.set(ControlMode.MotionProfile,setOutputR.value);
+    }
+
+   }
+
+   boolean profileEnable=false;
+
+   
+   public void profileEnable(boolean e){
+       if(e!=profileEnable&&e){ //if it changed to true
+        System.out.println("starting profile");
+           startMotionProfile();
+       }else if(e!=profileEnable&&!e) { //if it changed to false
+            System.out.println("stopping profile");
+           stop();
+       }
+       profileEnable = e;
+
+       if(!e) {
+        _leftProfileController.reset();
+        _rightProfileController.reset();
+       }
+       
+
+   }
+boolean hold=false;
+   public void holdMotionProile(boolean h){
+       //_leftProfileController.hold(hold);
+       //_rightProfileController.hold(hold);
+       hold = h;
+   }
+
+   public void startMotionProfile(){
+    _leftProfileController.startMotionProfile();
+    _rightProfileController.startMotionProfile();
+   }
+
+   public void stop(){
+       profileEnable=false;
+       setOpenLoop(DriveSignal.NEUTRAL);
+       _leftProfileController.reset();
+       _rightProfileController.reset();
+   }
 
     public void lowGear(boolean f){
         mShifter.set(f);
@@ -100,12 +169,13 @@ public class Drive {
      * Update open loop control
      */
     public synchronized void setOpenLoop(DriveSignal signal) {
-     
+     if(!profileEnable){
         setBrakeMode(signal.getBrakeMode());
         // Right side is reversed, but reverseOutput doesn't invert PercentVBus.
         // So set negative on the right master.
         mRightMaster.set(ControlMode.PercentOutput,signal.getRight());
         mLeftMaster.set(ControlMode.PercentOutput, signal.getLeft());
+     }
     }
 
   

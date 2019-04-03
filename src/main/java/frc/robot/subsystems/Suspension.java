@@ -186,9 +186,7 @@ private boolean jog=false;
         jog=true;
     }
 
-    public void climbJog(double amount){
-        mRaiseTalon.set(ControlMode.PercentOutput,amount);
-    }
+ 
 
    public boolean atPosition(){
       if(Math.abs(mWantedPosition-getPosition())<=Constants.kSuspensionLiftTolerance){
@@ -208,7 +206,7 @@ private boolean jog=false;
     if(hasHomed&&mWantedPosition!=mTravelingPosition){
 
         mTravelingPosition=mWantedPosition;
-        /*if(!jog)*/System.out.println("Suspension to "+mTravelingPosition);
+        if(!jog)System.out.println("Suspension to "+mTravelingPosition);
         jog=false;
         mRaiseTalon.set(ControlMode.MotionMagic, mTravelingPosition*Constants.kSuspensionLiftTicksPerInch);
     }

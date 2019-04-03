@@ -14,22 +14,29 @@ public class Constants extends ConstantsBase {
          //Talon
          public static final double regularTurnReduction=.85;
 
-        public static final double kDriveSwivelReduction=.7;
+        public static final double kDriveSwivelReduction=.8;
 
 
         public static final int kDriveLeftTalonID=9;
-        public static final double kDriveLeftTalonP=20;
+        public static final double kDriveLeftTalonP=.8;//.15
         public static final double kDriveLeftTalonI=0;
         public static final double kDriveLeftTalonD=0;
-        public static final double kDriveLeftTalonF=0;
+        
+
+        public static final double kDriveLeftMaxSpeed=2350;
+        public static final double kDriveLeftTalonF=(1.0*1023)/kDriveLeftMaxSpeed;
+
 
         public static final int kDriveRightTalonID=3;
-        public static final double kDriveRightTalonP=20;
-        public static final double kDriveRightTalonI=0;
-        public static final double kDriveRightTalonD=0;
-        public static final double kDriveRightTalonF=0;
 
-        public static final double kDriveTicksPerInch=1680 * 1; //TODO: get wheel diam
+       public static final double kDriveRightTalonP=kDriveLeftTalonP;
+        public static final double kDriveRightTalonI=kDriveLeftTalonI;
+        public static final double kDriveRightTalonD=kDriveLeftTalonD;
+        
+        public static final double kDriveRightMaxSpeed=2800;
+        public static final double kDriveRightTalonF=(1.0*1023)/kDriveRightMaxSpeed;
+
+        public static final double kDriveTicksPerInch=(4096)/(Math.PI*6);; //TODO: get wheel diam
         public static final double kDriveTolerance=5;
 
         //Victor
@@ -79,7 +86,7 @@ public class Constants extends ConstantsBase {
         public static final double kIntakePickUpSpeed=.8;
         public static final double kIntakeShootSpeed=-1;
 
-        public static final double kIntakeBallRequiredTime=.7;
+        public static final double kIntakeBallRequiredTime=.55;
         public static final double kIntakeShootPause = 1; 
 
         public static final double kIntakeCurrentThreshold=1.5;
@@ -111,36 +118,38 @@ public class Constants extends ConstantsBase {
         //Distances
             public static final double climbWristAngle=220;
 
-            public static final double preClimbMiddleHeight=12;
+            public static final double liftOffset=4;
+
+            public static final double preClimbMiddleHeight=10;
             public static final double preClimbHighHeight=20.5;
 
             public static final double suspClimbOffset=1;
 
             public static final double liftClimbSetPoint=0;
 
-            public static final double suspFloorPos = 1.25;
+            public static final double suspFloorPos = 1;
 
         //Cimb Lift
-            public static final double kLiftClimbP=3;//1
+            public static final double kLiftClimbP=1;//1
             public static final double kLiftClimbI=0;
             public static final double kLiftClimbD=0;
 
             public static final double kLiftMaxSpeedClimb=1800;//1800
             public static final double kLiftClimbF=(1.0*1023)/kLiftMaxSpeedClimb;
 
-            public static final double kLiftClimbVelocity=.5;   
-            public static final double kLiftClimbAcceleration=.5; 
+            public static final double kLiftClimbVelocity=3;   
+            public static final double kLiftClimbAcceleration=1; 
 
         //Climb Suspension
             public static final int kSuspensionBackLiftTalonID=4;
-                public static final double kSuspensionBackLiftTalonP=5;//.1
+                public static final double kSuspensionBackLiftTalonP=.3;//.1
                 public static final double kSuspensionBackLiftTalonI=0;
                 public static final double kSuspensionBackLiftTalonD=0;
-                public static final double kSuspensionMaxSpeedClimb=94000;//96000;
+                public static final double kSuspensionMaxSpeedClimb=96000;//96000;
                 public static final double kSuspensionBackLiftF=(1.0*1023)/kSuspensionMaxSpeedClimb;
 
                 public static final double kSuspensionVelocity=3;//10;   
-                public static final double kSuspensionAcceleration=3; 
+                public static final double kSuspensionAcceleration=1; 
 
             public static final double kSuspensionLiftTicksPerInch=(1024*4)*4*16; //added hopefully from test pannel testing
             public static final int kSuspensionLiftSoftLimit=21; 
@@ -158,14 +167,14 @@ public class Constants extends ConstantsBase {
         //Talon
         public static final int kLiftTalonID=10;
 
-        public static final double kLiftTalonP=1.4;
+        public static final double kLiftTalonP=1;//1.4;
         public static final double kLiftTalonI=0;
         public static final double kLiftTalonD=0;
-        public static final double kLiftMaxSpeed=1800;
+        public static final double kLiftMaxSpeed=1900;//1800;
         public static final double kLiftTalonF=(1.0*1023)/kLiftMaxSpeed;
 
-        public static final double kLiftVelocity=32;   
-        public static final double kLiftAcceleration=20; 
+        public static final double kLiftVelocity=20.5;//32;   
+        public static final double kLiftAcceleration=60;//20; 
 
         public static final double kLiftTicksPerInch=4096 /(1.4*Math.PI); 
         public static final double kLiftSoftLimit=34; 
@@ -186,17 +195,22 @@ public class Constants extends ConstantsBase {
             public static final double kPlateCenterTalonTolerance = .5;
 
         //Pneumatics
-        public static final int kPlateCenterSuckSolenoidPort=2;
+        //public static final int kPlateCenterSuckSolenoidPort=2;
         public static final int[] kPlateCenterDeploySolenoidPort={0,4};
         public static final int kPlateCenterHardStopYeeYeeSolenoidPort=1;
-        public static final int[] kPlateVaccuumReleaseSolenoidPort={6,7};
+        //public static final int[] kPlateVaccuumReleaseSolenoidPort={6,7};
+        public static final int[] kPlateHardStopOneWaySolenoidPort={6,7};
         
                             //VacOn, Suck, Push, vacOff, Retract, FinalReset, Done
         public static final double[] kPlateCenterDeployPauses = {.1,.2,.2,1,.2,.2}; 
-        //Lidar                                            
-        public static final int kPlateCenterLidar=1;
 
-        public static final double kPlateCenterCenteringSpeed=.4;
+        public static final double kPlateCenterHardStopPause=.1;
+        //Photoelectric                                            
+        public static final int kPlateCenterEdgeFinderPort=1;
+
+        public static final double kPlateCenterCenteringSpeed=.7; //.4 -----------------
+
+        public static final int kPlateCenterWallDetectorPort = 3;
 
         //Ultrasonic
         public static final int[] kPlateCenterUltraPort={2,3};
@@ -208,7 +222,7 @@ public class Constants extends ConstantsBase {
                                   
         public static final double kLimeLightDistanceFromCenter=1; //positive is movement to the left
 
-        public static final boolean kLimeLightAutoDeploy=false;
+        public static final boolean kLimeLightAutoDeploy=true;
 
         public static final double kLimeLightTargetPause = .25;
 

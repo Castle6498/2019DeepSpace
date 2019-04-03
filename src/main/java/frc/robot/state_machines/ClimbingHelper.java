@@ -132,7 +132,7 @@ public class ClimbingHelper extends Subsystem {
             stop();
             setClimbTuning(false);
             setVerticalJogMode(VerticalJogMode.DISABLED);
-            mIntake.setMotor(0);
+            mIntake.stop();
         }
 
         return defaultIdleTest();
@@ -147,7 +147,7 @@ public class ClimbingHelper extends Subsystem {
     private SystemState handlePreClimb() {
         if(mStateChanged){
            liftReady=false;
-           mIntake.setMotor(0);
+           mIntake.stop();
            setVerticalJogMode(VerticalJogMode.LIFT);
         }
  
@@ -168,7 +168,7 @@ public class ClimbingHelper extends Subsystem {
         if(mLift.atPosition()){
             if(!liftReady){
             liftReady=true;
-            mWrist.setPosition(Constants.climbWristAngle);
+            mWrist.setPosition(-Constants.climbWristAngle);
             System.out.println("pre climb lift ready");
             }
         }else{
@@ -196,7 +196,7 @@ public class ClimbingHelper extends Subsystem {
 
     private SystemState handleLifting(){
         if(mStateChanged){
-            mIntake.setMotor(0);
+            mIntake.stop();
             setClimbTuning(true);
             fullBlastReady=false;
             mSuspension.setPosition(Constants.suspFloorPos);
@@ -216,7 +216,8 @@ public class ClimbingHelper extends Subsystem {
 
 
             if(getFullBlast()){
-                mSuspension.setPosition(mLift.getPosition()+Constants.suspClimbOffset);
+                System.out.println("full blast BOI");
+                mSuspension.setPosition(mLift.getPosition()-Constants.liftOffset+Constants.suspClimbOffset);
                 mLift.setPosition(Constants.liftClimbSetPoint);
             }
 
@@ -243,17 +244,18 @@ public class ClimbingHelper extends Subsystem {
 
     private SystemState handleStowing(){
         if(mStateChanged){
-            mIntake.setMotor(0);
+            mIntake.stop();
             setClimbTuning(false);
             fullBlastReady=false;
             setVerticalJogMode(VerticalJogMode.SUSPENSION);
+            mWrist.setPosition(0);
         }
 
             if(getFullBlast()){
                 mSuspension.setPosition(0);
             }
 
-        if(mWantedState!=SystemState.LIFT){
+        if(mWantedState!=SystemState.STOW){
             setVerticalJogMode(VerticalJogMode.DISABLED);
         }
 
@@ -300,7 +302,7 @@ public class ClimbingHelper extends Subsystem {
     public void setHorizontalJog(double s){
         if(mSystemState==SystemState.LIFT||mSystemState==SystemState.STOW){
             mIntake.setMotor(s);
-            mDrive.setOpenLoop(new DriveSignal(s,s,true));
+            mDrive.setOpenLoop(new DriveSignal(s,-s,true));
         }
     }
 
