@@ -1,0 +1,4 @@
+InputFolder:
+C:\\Users\\lukeo\\Desktop\\Paths\\output\\
+OutputFolder:
+C:\\\\Users\\\\lukeo\\\\Desktop\\\\Paths\\\\output\\texts\\
