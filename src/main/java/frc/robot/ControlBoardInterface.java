@@ -1,7 +1,7 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+
 import frc.lib.util.DriveSignal;
 import frc.robot.state_machines.BallControlHelper;
 import frc.robot.state_machines.ClimbingHelper;
@@ -63,13 +63,23 @@ public interface ControlBoardInterface {
 
     boolean getClimbFullBlast();
 
+    double getClimbVerticleJog();
+
+    double getClimbHorizontalJog();
+
     public enum Controller {Driver,Operator}
-    void setRumble(Controller c, RumbleType type, double amount);
+    public enum RumbleSide {left, right, both}
+    void setRumble(Controller c, RumbleSide type, double amount);
 
     void setRumble(double amount);
 
     void rumbleOff();
 
+    boolean enableMotionProfile();
+
+   
+
+    boolean holdMotionProfile();
   
 
 }

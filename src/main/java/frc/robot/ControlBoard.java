@@ -294,32 +294,43 @@ public class ControlBoard implements ControlBoardInterface {
     //RUMBLE ------------------------------------------------------------------------------
 
         @Override
-        public void setRumble(Controller c, RumbleType type, double amount) {
-            if(c==Controller.Driver)mDriver.setRumble(type,amount);
-            else if(c==Controller.Operator)mOperator.setRumble(type,amount);
+        public void setRumble(Controller c, RumbleSide type, double amount) {
+            XboxController controller;
+            if(c==Controller.Driver) controller=mDriver;
+            else controller = mOperator;
+
+            switch(type){
+                case left:
+                    controller.setRumble(RumbleType.kLeftRumble,amount);              
+                break;
+                case right:
+                   controller.setRumble(RumbleType.kRightRumble,amount);
+                break;
+                case both: 
+                   controller.setRumble(RumbleType.kLeftRumble, amount);
+                   controller.setRumble(RumbleType.kRightRumble,amount);
+                break;
+            }
+            
         }
 
         @Override
         public void rumbleOff() {
-            setRumble(Controller.Driver, RumbleType.kLeftRumble, 0);
-            setRumble(Controller.Driver, RumbleType.kRightRumble, 0);
-            setRumble(Controller.Operator, RumbleType.kLeftRumble, 0);
-            setRumble(Controller.Operator, RumbleType.kRightRumble, 0);
+            setRumble(Controller.Driver, RumbleSide.both, 0);
+            setRumble(Controller.Operator, RumbleSide.both, 0);
         }
 
         @Override
         public void setRumble(double amount) {
-            setRumble(Controller.Driver, RumbleType.kLeftRumble, amount);
-            setRumble(Controller.Driver, RumbleType.kRightRumble, amount);
-            setRumble(Controller.Operator, RumbleType.kLeftRumble, amount);
-            setRumble(Controller.Operator, RumbleType.kRightRumble, amount);
+            setRumble(Controller.Driver, RumbleSide.both, amount);
+            setRumble(Controller.Operator, RumbleSide.both, amount);
         }
 
    //Climbing ---------------------------------------------------------------------------------
 
         @Override
         public boolean getSuspensionHome() {
-            return mDriver.getRawButtonReleased(7);
+            return false;//mDriver.getRawButtonReleased(7);
         }
 
         @Override
@@ -342,6 +353,35 @@ public class ControlBoard implements ControlBoardInterface {
         @Override
         public boolean getClimbFullBlast() {
             return mDriver.getStickButtonReleased(Hand.kRight);
+        }
+
+        @Override
+        public double getClimbVerticleJog() {
+            double speed=mDriver.getY(Hand.kRight);
+                if(Math.abs(speed)<=.1){
+                    speed=0;
+                }
+
+                speed*=.03;
+                return -speed;
+        }
+
+        @Override
+        public double getClimbHorizontalJog() {
+            return mDriver.getX(Hand.kRight)*.5;
+        }
+
+    //MOTION PROFILE -----------------------------------------------------------------------------
+        @Override
+        public boolean enableMotionProfile() {
+            return mDriver.getRawButton(7); //left one;
+        }
+
+        
+        
+        @Override
+        public boolean holdMotionProfile() {
+            return mDriver.getRawButton(8); //right one;
         }
 
    
