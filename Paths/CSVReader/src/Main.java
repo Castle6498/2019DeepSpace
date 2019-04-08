@@ -15,7 +15,7 @@ import de.siegmar.fastcsv.reader.CsvParser;
 import de.siegmar.fastcsv.reader.CsvReader;
 import de.siegmar.fastcsv.reader.CsvRow;
 
-public class demo {
+public class Main {
 
 	public static void main(String[] args) {
 		
