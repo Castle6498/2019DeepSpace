@@ -1,0 +1,4 @@
+InputFolder:
+C:\Users\lukeo\OneDrive\Documents\Robotics Club\2019 season\Repos\2019DeepSpace\2019DeepSpace\Paths\TestSquare\output\output\
+OutputFolder:
+C:\Users\lukeo\OneDrive\Documents\Robotics Club\2019 season\Repos\2019DeepSpace\2019DeepSpace\src\main\java\frc\robot\motion_profile\
