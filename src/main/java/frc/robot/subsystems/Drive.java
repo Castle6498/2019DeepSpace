@@ -151,6 +151,10 @@ boolean hold=false;
    }
 
    public void startMotionProfile(){
+    _leftProfileController = new MotionProfileHelper(mLeftMaster,GeneratedMotionProfileLeft.Points, GeneratedMotionProfileLeft.kNumPoints,true);
+    _rightProfileController = new MotionProfileHelper(mRightMaster,GeneratedMotionProfileRight.Points, GeneratedMotionProfileRight.kNumPoints,false);
+      
+
     _leftProfileController.startMotionProfile();
     _rightProfileController.startMotionProfile();
    }
