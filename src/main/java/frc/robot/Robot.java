@@ -94,7 +94,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-     teleopInit();
+       normalInitialization();
+       mPlate.startedCenter(); //MEANS it started at the exact center (no need to home)
     }
 
     @Override
@@ -102,11 +103,8 @@ public class Robot extends TimedRobot {
        teleopPeriodic();
     }
 
-    /**
-     * Initializes the robot for the beginning of teleop
-     */
-    @Override
-    public void teleopInit() {
+
+    public void normalInitialization(){
         try {
             CrashTracker.logTeleopInit();
 
@@ -131,6 +129,15 @@ public class Robot extends TimedRobot {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }
+    }
+    /**
+     * Initializes the robot for the beginning of teleop
+     */
+    @Override
+    public void teleopInit() {
+        normalInitialization();
+            
+        mPlate.setWantedState(PlateCenter.SystemState.HOMING);      
     }
 
     /**

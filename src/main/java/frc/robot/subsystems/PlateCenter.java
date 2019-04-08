@@ -193,6 +193,12 @@ public class PlateCenter extends Subsystem {
     
     private boolean hasHomed = false;
 
+    public void startedCenter(){
+        mBeltTalon.setSelectedSensorPosition((int) Math.round((Constants.kPlateCenterTalonSoftLimit/2)*Constants.kPlateCenterTicksPerInch));
+        hasHomed=true;
+        setPosition(Constants.kPlateCenterTalonSoftLimit/2);
+
+    }
     
 
     private SystemState handleHoming(double now, double startedAt){
