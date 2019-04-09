@@ -112,7 +112,7 @@ public class Robot extends TimedRobot {
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mBall.setWantedState(BallControlHelper.SystemState.HOME);
-            mPlate.setWantedState(PlateCenter.SystemState.HOMING);
+            //mPlate.setWantedState(PlateCenter.SystemState.HOMING);
             mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
             
             CameraVision.setLedMode(LightMode.eOff);

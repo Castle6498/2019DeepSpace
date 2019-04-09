@@ -192,7 +192,7 @@ public class Constants extends ConstantsBase {
 
             public static final double kPlateCenterTicksPerInch=1680 / (2.24*Math.PI); 
             public static final double kPlateCenterTalonSoftLimit=15; 
-            public static final double kPlateCenterTalonTolerance = .5;
+            public static final double kPlateCenterTalonTolerance = .01;
 
         //Pneumatics
         //public static final int kPlateCenterSuckSolenoidPort=2;
@@ -220,7 +220,7 @@ public class Constants extends ConstantsBase {
 
         public static final double kLimeLightDistancetoTarget=25;
                                   
-        public static final double kLimeLightDistanceFromCenter=1; //positive is movement to the left
+        public static final double kLimeLightDistanceFromCenter=2; //positive is movement to the left
 
         public static final boolean kLimeLightAutoDeploy=true;
 

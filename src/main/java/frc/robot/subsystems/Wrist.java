@@ -56,6 +56,8 @@ public class Wrist extends Subsystem {
 
         
         setClimbTuning(false);
+
+        setMaxSpeed(Constants.kWristMaxOutput);
         
         mTalonChild = new TalonSRX(Constants.kWristChildTalonID);
         mTalonChild.setNeutralMode(NeutralMode.Brake);
@@ -68,10 +70,18 @@ public class Wrist extends Subsystem {
 
     public void setClimbTuning(boolean t){
         if(t){
+            System.out.println("Wirst on climb tuning");
             mTalon.selectProfileSlot(1, 0);
            }else{
+               System.out.println("Wrist off climb tuning");
             mTalon.selectProfileSlot(0, 0);
            }
+    }
+
+    public void setMaxSpeed(double max){
+        System.out.println("wrist max set to: "+max);
+        mTalon.configPeakOutputForward(max);
+        mTalon.configPeakOutputReverse(-max);
     }
 
 
