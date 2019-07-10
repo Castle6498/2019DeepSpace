@@ -20,8 +20,8 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
  *
  */
 
-public class Suspension extends Subsystem {
-    
+//public class Suspension extends Subsystem {
+    /*
    
 
     private static Suspension sInstance = null;
@@ -33,12 +33,12 @@ public class Suspension extends Subsystem {
         return sInstance;
     }
 
-    private TalonSRX mRaiseTalon;
+    //private TalonSRX mRaiseTalon;
    
     public Suspension() {
         
         //Talon Initialization 
-        mRaiseTalon = CANTalonFactory.createTalon(Constants.kSuspensionBackLiftTalonID, 
+     /*   mRaiseTalon = CANTalonFactory.createTalon(Constants.kSuspensionBackLiftTalonID, 
         true, NeutralMode.Brake, FeedbackDevice.QuadEncoder, 0, true);
 
         mRaiseTalon = CANTalonFactory.setupHardLimits(mRaiseTalon, LimitSwitchSource.Deactivated,
@@ -57,7 +57,7 @@ public class Suspension extends Subsystem {
     }
 
     private void setLimitClear(boolean e){
-           mRaiseTalon.configClearPositionOnLimitR(e,0);    
+          // mRaiseTalon.configClearPositionOnLimitR(e,0);    
     }
 
     public enum ControlState {
@@ -138,31 +138,31 @@ public class Suspension extends Subsystem {
             hasHomed=false;
             setLimitClear(true);
             System.out.println("homing suspension");
-            mRaiseTalon.set(ControlMode.PercentOutput, -.4);
-            mRaiseTalon.setSelectedSensorPosition(-500);
+           // mRaiseTalon.set(ControlMode.PercentOutput, -.4);
+           // mRaiseTalon.setSelectedSensorPosition(-500);
         }
 
-        if(!hasHomed&&mRaiseTalon.getSelectedSensorPosition()==0){
+      //  if(!hasHomed&&mRaiseTalon.getSelectedSensorPosition()==0){
             hasHomed=true;
             mTravelingPosition=.1;
             
             setPosition(0);
             System.out.println("sensor at 0");
-        }
+       // }
 
         ControlState newState;
 
         if(hasHomed){
-            if(atPosition()){
+           // if(atPosition()){
             newState= defaultIdleTest();
             }else{
                 newState= mWantedState;
             }
-        }else{
+       // }else{
             newState= ControlState.HOMING;
-        }
+      //  }
 
-        if(newState!=ControlState.HOMING)setLimitClear(false);
+      //  if(newState!=ControlState.HOMING)setLimitClear(false);
         return newState;
     }
 
@@ -188,18 +188,18 @@ private boolean jog=false;
 
  
 
-   public boolean atPosition(){
-      if(Math.abs(mWantedPosition-getPosition())<=Constants.kSuspensionLiftTolerance){
-          return true;
-      }else{
-          return false;
-      }
+   //public boolean atPosition(){
+    //  if(Math.abs(mWantedPosition-getPosition())<=Constants.kSuspensionLiftTolerance){
+    //      return true;
+     // }else{
+     //     return false;
+     // }
        
-   }
+  // }
 
-   public double getPosition(){
-       return mRaiseTalon.getSelectedSensorPosition()/Constants.kSuspensionLiftTicksPerInch;
-   }
+  // public double getPosition(){
+     //  return mRaiseTalon.getSelectedSensorPosition()/Constants.kSuspensionLiftTicksPerInch;
+  // }
 
    private void positionUpdater(){
            
@@ -208,7 +208,7 @@ private boolean jog=false;
         mTravelingPosition=mWantedPosition;
         if(!jog)System.out.println("Suspension to "+mTravelingPosition);
         jog=false;
-        mRaiseTalon.set(ControlMode.MotionMagic, mTravelingPosition*Constants.kSuspensionLiftTicksPerInch);
+     //   mRaiseTalon.set(ControlMode.MotionMagic, mTravelingPosition*Constants.kSuspensionLiftTicksPerInch);
     }
 }
 
@@ -217,7 +217,7 @@ private boolean jog=false;
 
   
    private synchronized void stopMotor(){
-        mRaiseTalon.set(ControlMode.Disabled,0);
+     //   mRaiseTalon.set(ControlMode.Disabled,0);
     }
 
     public synchronized void setWantedState(ControlState state) {
@@ -249,5 +249,5 @@ private boolean jog=false;
         boolean failure=false;       
         return !failure;
     }
-
-}
+*/
+//}

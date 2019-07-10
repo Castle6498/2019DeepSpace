@@ -11,7 +11,7 @@ import frc.robot.CameraVision.StreamMode;
 
 import frc.robot.loops.Looper;
 import frc.robot.state_machines.BallControlHelper;
-import frc.robot.state_machines.ClimbingHelper;
+//import frc.robot.state_machines.ClimbingHelper;
 import frc.robot.state_machines.BallControlHelper.CarryHeight;
 import frc.robot.state_machines.BallControlHelper.PickUpHeight;
 import frc.robot.state_machines.BallControlHelper.ShootHeight;
@@ -20,7 +20,7 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lift;
 import frc.robot.subsystems.PlateCenter;
-import frc.robot.subsystems.Suspension;
+//import frc.robot.subsystems.Suspension;
 import frc.robot.subsystems.Wrist;
 
 /**
@@ -48,14 +48,14 @@ public class Robot extends TimedRobot {
     private Drive mDrive = Drive.getInstance();
     private PlateCenter mPlate = PlateCenter.getInstance();
     private BallControlHelper mBall = BallControlHelper.getInstance();
-    private ClimbingHelper mClimbingHelper = ClimbingHelper.getInstance();
+
     
     
 
 
     // Create subsystem manager
-    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mPlate,mBall,mClimbingHelper,
-    Intake.getInstance(),Lift.getInstance(),Wrist.getInstance(),Suspension.getInstance()));
+    private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(mPlate,mBall,
+    Intake.getInstance(),Lift.getInstance(),Wrist.getInstance()));
 
     // Initialize other helper objects
     private ControlBoardInterface mControlBoard = ControlBoard.getInstance();
@@ -113,7 +113,7 @@ public class Robot extends TimedRobot {
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mBall.setWantedState(BallControlHelper.SystemState.HOME);
             //mPlate.setWantedState(PlateCenter.SystemState.HOMING);
-            mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
+            //mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
             
             CameraVision.setLedMode(LightMode.eOff);
             CameraVision.setCameraMode(CameraMode.eVision);
@@ -137,7 +137,7 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
         normalInitialization();
             
-        mPlate.setWantedState(PlateCenter.SystemState.HOMING);      
+        if(!mPlate.hasHomed())mPlate.setWantedState(PlateCenter.SystemState.HOMING);      
     }
 
     /**
@@ -198,7 +198,7 @@ public class Robot extends TimedRobot {
         
         //CLIMBING -----------------------------------------------------------------------------
             
-            if(mControlBoard.getSuspensionHome())mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
+         /*  if(mControlBoard.getSuspensionHome())mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
             
             ClimbingHelper.PreClimbHeight h = mControlBoard.getPreClimbHeight();
             if(h!=null)mClimbingHelper.preClimb(h);
@@ -210,7 +210,7 @@ public class Robot extends TimedRobot {
         
             mClimbingHelper.setVerticalJog(mControlBoard.getClimbVerticleJog());
             mClimbingHelper.setHorizontalJog(mControlBoard.getClimbHorizontalJog());
-
+*/
 
        
            

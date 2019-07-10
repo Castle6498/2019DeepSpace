@@ -223,6 +223,10 @@ public double getPosition(){
    return mTalon.getSelectedSensorPosition()/Constants.kWristTicksPerDeg;
 }
 
+public double getSetPosition(){
+    return mTravelingPosition;
+}
+
 private void positionUpdater(){
        
 if(hasHomed&&mWantedPosition!=mTravelingPosition){

@@ -42,7 +42,7 @@ public class BallControlHelper extends Subsystem {
     private final Lift mLift = Lift.getInstance();
     private final Intake mIntake = Intake.getInstance();
     private final Wrist mWrist = Wrist.getInstance();
-    private final ClimbingHelper mClimbingHelper = ClimbingHelper.getInstance();
+   // private final ClimbingHelper mClimbingHelper = ClimbingHelper.getInstance();
 
     // Intenal state of the system
     public enum SystemState {
@@ -51,7 +51,7 @@ public class BallControlHelper extends Subsystem {
         SHOOTBALLPOSITION,
         SHOOT,
         CARRYBALL,
-        CLIMB,
+       // CLIMB,
         HOME
         };
 
@@ -98,9 +98,9 @@ public class BallControlHelper extends Subsystem {
                 case CARRYBALL:
                     newState = handleCarryBall();
                     break;
-                case CLIMB: 
-                    newState = handleClimb();
-                    break;
+              //  case CLIMB: 
+              //      newState = handleClimb();
+              //      break;
                 case HOME:
                     newState = handleHome();
                     break;
@@ -117,7 +117,7 @@ public class BallControlHelper extends Subsystem {
                 } else {
                     mStateChanged = false;
                 }
-                climbUpdater();
+            //    climbUpdater();
             }
         }
 
@@ -164,6 +164,7 @@ public class BallControlHelper extends Subsystem {
                     System.out.println("Ball lift and wrist pick up floor");
                         mLift.setPosition(Constants.kLiftPickUpFloor);
                         mWrist.setPosition(Constants.kWristPickUpFloor);
+                        
                     break;
                 case LOADING_STATION:
                         mLift.setPosition(Constants.kLiftPickUpLoadingStation);
@@ -171,7 +172,7 @@ public class BallControlHelper extends Subsystem {
                 break;
             }
        }
-
+       
        if(mIntake.hasBall()){
            if(Constants.kCarryAfterPickUp){
                mWantedState=SystemState.CARRYBALL;
@@ -243,13 +244,13 @@ public class BallControlHelper extends Subsystem {
         return mWantedState;
     }
 
-   private void climbUpdater(){
-        if(mClimbingHelper.getClimbing()) {
-            setWantedState(SystemState.CLIMB);
-        }
-   }
+  // private void climbUpdater(){
+  //      if(mClimbingHelper.getClimbing()) {
+  //          setWantedState(SystemState.CLIMB);
+   //     }
+  // }
    
-    private SystemState handleClimb() {
+   /* private SystemState handleClimb() {
         if(mStateChanged){
             mIntake.setWantedState(Intake.SystemState.IDLE);
             
@@ -273,7 +274,7 @@ public class BallControlHelper extends Subsystem {
                     return mWantedState;
                 }
         }
-    }
+    }*/
 
 
     private double startedAt=0;
@@ -347,12 +348,12 @@ public class BallControlHelper extends Subsystem {
 
     //Jog Commands
         public void jogLift(double amount){
-           if(!mClimbingHelper.getClimbing()) mLift.jog(amount);
+          /* if(!mClimbingHelper.getClimbing())*/ mLift.jog(amount);
            
         }
 
         public void jogWrist(double amount){
-            if(!mClimbingHelper.getClimbing()) mWrist.jog(amount);
+          /*  if(!mClimbingHelper.getClimbing()) */mWrist.jog(amount);
         }
 
   

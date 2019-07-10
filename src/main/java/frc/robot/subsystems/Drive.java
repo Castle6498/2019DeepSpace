@@ -39,8 +39,8 @@ public class Drive {
    // private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave;
     private final Solenoid mShifter;
     
-    private TalonSRX mLeftMaster, mRightMaster;
-    private VictorSPX mLeftSlave, mRightSlave;
+    private TalonSRX mLeftMaster, mRightMaster, mLeftTwoSlave, mRightTwoSlave;
+    private VictorSPX mLeftSlave, mRightSlave ;
    
     MotionProfileHelper _leftProfileController;
     MotionProfileHelper _rightProfileController;
@@ -82,6 +82,14 @@ public class Drive {
             mRightSlave = new VictorSPX(Constants.kDriveRightVictorID);
             mLeftSlave.setInverted(true);
             mRightSlave.follow(mRightMaster);
+
+            mLeftTwoSlave = new TalonSRX(Constants.kDriveLeftTwoVictorID);
+            mLeftTwoSlave.setInverted(true);
+            mLeftTwoSlave.follow(mLeftMaster);
+
+            mRightTwoSlave = new TalonSRX(Constants.kDriveRightTwoVictorID);
+            mRightTwoSlave.setInverted(true);
+            mRightTwoSlave.follow(mRightMaster);
 
             mShifter=new Solenoid(Constants.kDriverShifterPort);
         

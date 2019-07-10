@@ -4,7 +4,7 @@ package frc.robot;
 
 import frc.lib.util.DriveSignal;
 import frc.robot.state_machines.BallControlHelper;
-import frc.robot.state_machines.ClimbingHelper;
+//import frc.robot.state_machines.ClimbingHelper;
 import frc.robot.state_machines.BallControlHelper.CarryHeight;
 import frc.robot.state_machines.BallControlHelper.PickUpHeight;
 import frc.robot.state_machines.BallControlHelper.ShootHeight;
@@ -55,7 +55,7 @@ public interface ControlBoardInterface {
 
     boolean getSuspensionHome();
 
-    ClimbingHelper.PreClimbHeight getPreClimbHeight();
+   // ClimbingHelper.PreClimbHeight getPreClimbHeight();
 
     boolean getClimbLift();
 

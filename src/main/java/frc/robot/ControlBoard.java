@@ -4,13 +4,13 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.lib.util.DriveSignal;
 import frc.robot.CameraVision.StreamMode;
-import frc.robot.state_machines.ClimbingHelper;
+//import frc.robot.state_machines.ClimbingHelper;
 import frc.robot.state_machines.BallControlHelper.CarryHeight;
 
 
 import frc.robot.state_machines.BallControlHelper.PickUpHeight;
 import frc.robot.state_machines.BallControlHelper.ShootHeight;
-import frc.robot.state_machines.ClimbingHelper.PreClimbHeight;
+//import frc.robot.state_machines.ClimbingHelper.PreClimbHeight;
 import edu.wpi.first.wpilibj.XboxController;
 
 /**
@@ -333,12 +333,12 @@ public class ControlBoard implements ControlBoardInterface {
             return false;//mDriver.getRawButtonReleased(7);
         }
 
-        @Override
-        public PreClimbHeight getPreClimbHeight() {
-            if(mDriver.getPOV()==270) return ClimbingHelper.PreClimbHeight.MIDDLE;
-            else if(mDriver.getPOV()==0) return ClimbingHelper.PreClimbHeight.HIGH;
-            else return null;
-        }
+      //  @Override
+       // public PreClimbHeight getPreClimbHeight() {
+      //      if(mDriver.getPOV()==270) return ClimbingHelper.PreClimbHeight.MIDDLE;
+      //      else if(mDriver.getPOV()==0) return ClimbingHelper.PreClimbHeight.HIGH;
+      //      else return null;
+     //   }
 
         @Override
         public boolean getClimbLift() {

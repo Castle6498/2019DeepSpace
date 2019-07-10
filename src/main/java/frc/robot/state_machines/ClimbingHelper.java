@@ -28,6 +28,7 @@ import frc.robot.loops.Looper;
  * The superstructure also coordinates actions between different subsystems like the feeder and shooter.
  * 
  */
+/*
 public class ClimbingHelper extends Subsystem {
 
     static ClimbingHelper mInstance = null;
@@ -373,3 +374,4 @@ public class ClimbingHelper extends Subsystem {
         }
 
 }
+*/

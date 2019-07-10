@@ -200,6 +200,9 @@ public class PlateCenter extends Subsystem {
 
     }
     
+    public boolean hasHomed(){
+        return hasHomed;
+    }
 
     private SystemState handleHoming(double now, double startedAt){
         if(mStateChanged){

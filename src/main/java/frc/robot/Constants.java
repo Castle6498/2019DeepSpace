@@ -14,7 +14,7 @@ public class Constants extends ConstantsBase {
          //Talon
          public static final double regularTurnReduction=.85;
 
-        public static final double kDriveSwivelReduction=.8;
+        public static final double kDriveSwivelReduction=1;
 
 
         public static final int kDriveLeftTalonID=9;
@@ -43,17 +43,20 @@ public class Constants extends ConstantsBase {
         public static final int kDriveLeftVictorID=2;
         public static final int kDriveRightVictorID=1;
 
+        public static final int kDriveLeftTwoVictorID=12;
+        public static final int kDriveRightTwoVictorID=4;
+
         public static final int kDriverShifterPort=3;
     //Ball Control Helper 
         //PickUp
             public static final double kLiftPickUpFloor = 0;
-            public static final double kWristPickUpFloor = -140;
+            public static final double kWristPickUpFloor = -125;
             public static final double kLiftPickUpLoadingStation = 20;
             public static final double kWristPickUpLoadingStation = 0;
  
         //Shoot Height
             public static final double kLiftShootCargoShip = 24;
-            public static final double kWristShootCargoShip = -25;
+            public static final double kWristShootCargoShip = -35;
 
             public static final double kLiftShootRocketOne = 6;
             public static final double kWristShootRocketOne = 0;
@@ -98,9 +101,9 @@ public class Constants extends ConstantsBase {
     
         //Talon
         public static final int kWristTalonID=8;
-        public static final int kWristChildTalonID=0; 
+        public static final int kWristChildTalonID=11; 
 
-        public static final double kWristTalonP=12;
+        public static final double kWristTalonP=4;
         public static final double kWristTalonI=0;
         public static final double kWristTalonD=0;
         public static final double kWristTalonF=0;
@@ -141,7 +144,7 @@ public class Constants extends ConstantsBase {
             public static final double kLiftClimbAcceleration=1; 
 
         //Climb Suspension
-            public static final int kSuspensionBackLiftTalonID=4;
+           // public static final int kSuspensionBackLiftTalonID=4;
                 public static final double kSuspensionBackLiftTalonP=.3;//.1
                 public static final double kSuspensionBackLiftTalonI=0;
                 public static final double kSuspensionBackLiftTalonD=0;
