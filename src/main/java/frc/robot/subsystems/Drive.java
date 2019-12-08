@@ -77,19 +77,23 @@ public class Drive {
         //Victor Initialization
             mLeftSlave = new VictorSPX(Constants.kDriveLeftVictorID);
             mLeftSlave.setInverted(true);
-            mLeftSlave.follow(mLeftMaster);
+            //mLeftSlave.follow(mLeftMaster);
+            mLeftSlave.set(ControlMode.Disabled,0);
             
             mRightSlave = new VictorSPX(Constants.kDriveRightVictorID);
             mLeftSlave.setInverted(true);
-            mRightSlave.follow(mRightMaster);
+            //mRightSlave.follow(mRightMaster);
+            mRightSlave.set(ControlMode.Disabled,0);
 
             mLeftTwoSlave = new TalonSRX(Constants.kDriveLeftTwoVictorID);
             mLeftTwoSlave.setInverted(true);
-            mLeftTwoSlave.follow(mLeftMaster);
+            //mLeftTwoSlave.follow(mLeftMaster);
+            mLeftTwoSlave.set(ControlMode.Disabled,0);
 
             mRightTwoSlave = new TalonSRX(Constants.kDriveRightTwoVictorID);
             mRightTwoSlave.setInverted(true);
-            mRightTwoSlave.follow(mRightMaster);
+            //mRightTwoSlave.follow(mRightMaster);
+            mRightTwoSlave.set(ControlMode.Disabled,0);
 
             mShifter=new Solenoid(Constants.kDriverShifterPort);
         

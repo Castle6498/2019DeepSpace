@@ -5,9 +5,9 @@ import java.util.Arrays;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.lib.util.CrashTracker;
 import frc.lib.util.DriveSignal;
-import frc.robot.CameraVision.CameraMode;
-import frc.robot.CameraVision.LightMode;
-import frc.robot.CameraVision.StreamMode;
+//import frc.robot.CameraVision.CameraMode;
+//import frc.robot.CameraVision.LightMode;
+//import frc.robot.CameraVision.StreamMode;
 
 import frc.robot.loops.Looper;
 import frc.robot.state_machines.BallControlHelper;
@@ -115,10 +115,10 @@ public class Robot extends TimedRobot {
             //mPlate.setWantedState(PlateCenter.SystemState.HOMING);
             //mClimbingHelper.setWantedState(ClimbingHelper.SystemState.HOME);
             
-            CameraVision.setLedMode(LightMode.eOff);
-            CameraVision.setCameraMode(CameraMode.eVision);
-            CameraVision.setPipeline(1);
-            CameraVision.setStreamMode(StreamMode.LimeMain);
+            //CameraVision.setLedMode(LightMode.eOff);
+            //CameraVision.setCameraMode(CameraMode.eVision);
+            //CameraVision.setPipeline(1);
+            //CameraVision.setStreamMode(StreamMode.LimeMain);
 
            
 
@@ -168,8 +168,8 @@ public class Robot extends TimedRobot {
           
         //PLATE -------------------------------------------------------------------------------------
 
-            if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
-            else if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
+            //if(mControlBoard.getHatchPanelAlignment()) mPlate.setWantedState(PlateCenter.SystemState.AUTOALIGNING);
+            /*else*/ if(mControlBoard.getHatchPanelCentering()) mPlate.setWantedState(PlateCenter.SystemState.CENTERING);
             else if(mControlBoard.getHatchPanelDeploy()) mPlate.setWantedState(PlateCenter.SystemState.DEPLOYINGPLATE);
             else if(mControlBoard.getPlateHome()) mPlate.setWantedState(PlateCenter.SystemState.HOMING);
         
